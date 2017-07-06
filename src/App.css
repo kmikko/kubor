@@ -19,6 +19,40 @@
 }
 
 @keyframes App-logo-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+body {
+  background-color: #fafafa;
+}
+
+.is-maincontent > .column {
+  padding: 30px;
+}
+
+.is-maincontent > :first-child {
+  border-right: 1px solid #dbdbdb;
+}
+
+.nav.is-default {
+  background-color: #0b62a4;
+}
+
+.nav-item a,
+a.nav-item {
+  color: #ffffff;
+}
+
+a.nav-item > span.icon {
+  margin-right: 0.5rem;
+}
+
+a.nav-item > span {
+  font-weight: bold;
+  font-size: 1.2rem;
 }
