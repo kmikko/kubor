@@ -1,6 +1,6 @@
 import { combineReducers } from "redux";
 
-import todos from "./todos";
+import todos, * as fromTodos from "./todos";
 import visibilityFilter from "./visibilityFilter";
 
 const app = combineReducers({
@@ -19,3 +19,8 @@ export default function app(state = {}, action) {
 */
 
 export default app;
+
+// From combineReducers we know that state.todos is available
+// This way components won't rely on state shape
+export const getVisibleTodos = (state, filter) =>
+  fromTodos.getVisibleTodos(state.todos, filter);
