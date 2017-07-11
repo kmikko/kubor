@@ -1,6 +1,6 @@
-import React from "react";
-import PropTypes from "prop-types";
-import Todo from "./Todo";
+import React from 'react';
+import PropTypes from 'prop-types';
+import Todo from './Todo';
 
 const TodoList = ({ todos, onTodoClick }) =>
   <ul>
@@ -12,7 +12,7 @@ const TodoList = ({ todos, onTodoClick }) =>
 TodoList.propTypes = {
   todos: PropTypes.arrayOf(
     PropTypes.shape({
-      id: PropTypes.number.isRequired,
+      id: PropTypes.string.isRequired,
       completed: PropTypes.bool.isRequired,
       text: PropTypes.string.isRequired
     }).isRequired
