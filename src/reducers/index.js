@@ -1,26 +1,24 @@
 import { combineReducers } from "redux";
+import byId, * as fromById from "./byId";
+import createList, * as fromList from "./createList";
 
-import todos, * as fromTodos from "./todos";
-import visibilityFilter from "./visibilityFilter";
-
-const app = combineReducers({
-  todos,
-  visibilityFilter
+const listByFilter = combineReducers({
+  all: createList("all"),
+  active: createList("active"),
+  completed: createList("completed")
 });
 
-/*
-Above is equivalent to:
-export default function app(state = {}, action) {
-  return {
-    visibilityFilter: visibilityFilter(state.visibilityFilter, action),
-    todos: todos(state.todos, action)
-  }
-}
-*/
+const todos = combineReducers({
+  byId,
+  listByFilter
+});
 
-export default app;
+export default todos;
 
-// From combineReducers we know that state.todos is available
-// This way components won't rely on state shape
-export const getVisibleTodos = (state, filter) =>
-  fromTodos.getVisibleTodos(state.todos, filter);
+export const getVisibleTodos = (state, filter) => {
+  const ids = fromList.getIds(state.listByFilter[filter]);
+  return ids.map(id => fromById.getTodo(state.byId, id));
+};
+
+export const getIsFetching = (state, filter) =>
+  fromList.getIsFetching(state.listByFilter[filter]);
