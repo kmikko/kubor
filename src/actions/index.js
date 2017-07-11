@@ -1,23 +1,22 @@
 import { v4 } from "node-uuid";
-/*
- * action types
- */
+import * as api from "../api";
 
-export const ADD_TODO = "ADD_TODO";
-export const TOGGLE_TODO = "TOGGLE_TODO";
-export const SET_VISIBILITY_FILTER = "SET_VISIBILITY_FILTER";
+const receiveTodos = (filter, response) => ({
+  type: "RECEIVE_TODOS",
+  filter,
+  response
+});
 
-/*
- * action creators
- */
+export const fetchTodos = filter =>
+  api.fetchTodos(filter).then(response => receiveTodos(filter, response));
 
 export const addTodo = text => ({
-  type: ADD_TODO,
+  type: "ADD_TODO",
   id: v4(),
   text
 });
 
 export const toggleTodo = id => ({
-  type: TOGGLE_TODO,
+  type: "TOGGLE_TODO",
   id
 });
