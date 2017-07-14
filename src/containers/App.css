@@ -1,0 +1,39 @@
+svg.placeholder {
+  max-width: 100%;
+  background: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiIgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiBmaWxsPSJ3aGl0ZSI+CiAgPHBhdGggZD0iTTAgNCBMMCAyOCBMMzIgMjggTDMyIDQgeiBNNCAyNCBMMTAgMTAgTDE1IDE4IEwxOCAxNCBMMjQgMjR6IE0yNSA3IEE0IDQgMCAwIDEgMjUgMTUgQTQgNCAwIDAgMSAyNSA3Ij48L3BhdGg+Cjwvc3ZnPg==")
+    no-repeat center hsl(0, 0%, 80%);
+  background-size: calc(100%/3);
+}
+
+.image.is-square svg,
+.image.is-1by1 svg,
+.image.is-4by3 svg,
+.image.is-3by2 svg,
+.image.is-16by9 svg,
+.image.is-2by1 svg {
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  width: 100%;
+}
+
+.image svg {
+  display: block;
+  height: auto;
+  width: 100%;
+}
+
+body {
+  background-color: #fafafa;
+}
+
+.is-maincontent > .column {
+  padding: 30px;
+}
+
+.is-maincontent > :first-child {
+  border-right: 1px solid #dbdbdb;
+}
