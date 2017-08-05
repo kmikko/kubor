@@ -21,7 +21,8 @@
     "redux-devtools": "^3.4.0",
     "redux-logger": "^3.0.6",
     "redux-promise": "^0.5.3",
-    "redux-thunk": "^2.2.0"
+    "redux-thunk": "^2.2.0",
+    "victory": "^0.21.2"
   },
   "lint-staged": {
     "src/**/*.{js,jsx,json,css}": [
