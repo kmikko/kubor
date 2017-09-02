@@ -1,11 +1,11 @@
-import React from 'react';
+import React from "react";
 import {
   VictoryBar,
   VictoryChart,
   VictoryAxis,
   VictoryTheme,
   VictoryTooltip
-} from 'victory';
+} from "victory";
 
 const BarChart = () => {
   const data = [
@@ -19,7 +19,7 @@ const BarChart = () => {
       <VictoryAxis
         // x-axis
         tickValues={[1, 2, 3, 4]}
-        tickFormat={['Quarter 1', 'Quarter 2', 'Quarter 3', 'Quarter 4']}
+        tickFormat={["Quarter 1", "Quarter 2", "Quarter 3", "Quarter 4"]}
       />
       <VictoryAxis
         // y-axis

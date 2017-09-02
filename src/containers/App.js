@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Route, Link, Switch } from "react-router-dom";
 
 import "bulma/css/bulma.css";
 import "./App.css";
-import "font-awesome/css/font-awesome.min.css";
+//import "font-awesome/css/font-awesome.min.css";
 
 import TopBar from "./TopBar";
 import SideBar from "./SideBar";
