@@ -4,16 +4,10 @@ import PropTypes from "prop-types";
 
 import { fetchCpuUsage, fetchNetworkUsage } from "../actions";
 
-import Card from "../components/Card";
-import Table from "../components/Table";
-import BarChart from "../components/BarChart";
-import PieChart from "../components/PieChart";
-import LineChart from "../components/LineChart";
-
 import CpuUsage from "../components/CpuUsage";
 import NetworkUsage from "../components/NetworkUsage";
 
-class Dashboard extends React.Component {
+class Overview extends React.Component {
   componentDidMount() {
     this.props.getCpuUsage();
     this.props.getNetworkUsage();
@@ -52,7 +46,7 @@ class Dashboard extends React.Component {
   }
 }
 
-Dashboard.propTypes = {
+Overview.propTypes = {
   usage: PropTypes.shape({
     cpu: PropTypes.array,
     network: PropTypes.array
@@ -74,4 +68,4 @@ const mapDispatchToProps = dispatch => ({
 export default connect(mapStateToProps, {
   getCpuUsage: fetchCpuUsage,
   getNetworkUsage: fetchNetworkUsage
-})(Dashboard);
+})(Overview);

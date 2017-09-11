@@ -37,3 +37,15 @@ body {
 .is-maincontent > :first-child {
   border-right: 1px solid #dbdbdb;
 }
+
+input.flatpickr-input {
+  display: none;
+}
+
+.flatpickr-calendar.arrowTop:after {
+  display: none;
+}
+
+.flatpickr-calendar.arrowTop:before {
+  display: none;
+}

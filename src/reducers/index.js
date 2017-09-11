@@ -1,4 +1,28 @@
 import { combineReducers } from "redux";
+import { routerReducer } from "react-router-redux";
+
+import counter from "./counter";
+import usage from "./usage";
+
+export default combineReducers({
+  router: routerReducer,
+  counter,
+  usage
+});
+
+export const makeIncrement = () => dispatch => {
+  dispatch({
+    type: "counter/INCREMENT_REQUESTED"
+  });
+
+  setTimeout(() => {
+    dispatch({
+      type: "counter/INCREMENT"
+    });
+  }, 3000);
+};
+
+/*
 import byId, * as fromById from "./byId";
 import createList, * as fromList from "./createList";
 
@@ -13,6 +37,7 @@ const todos = combineReducers({
   listByFilter
 });
 
+// TOOD: Name this to rootReducer, not necessary but makes more sense
 export default todos;
 
 export const getVisibleTodos = (state, filter) => {
@@ -25,3 +50,4 @@ export const getIsFetching = (state, filter) =>
 
 export const getErrorMessage = (state, filter) =>
   fromList.getErrorMessage(state.listByFilter[filter]);
+*/

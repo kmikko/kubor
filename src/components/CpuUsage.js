@@ -40,7 +40,7 @@ const CpuUsage = props => {
         data={values}
         x={0}
         y={1}
-        style={{ data: { stroke: "#23d160" } }}
+        style={{ data: { stroke: "#0b62a4" } }}
         interpolation="natural"
         labels={d => d.y}
         labelComponent={<VictoryTooltip />}

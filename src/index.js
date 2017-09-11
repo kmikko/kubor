@@ -1,14 +1,24 @@
 import React from "react";
-import ReactDOM from "react-dom";
-//import configureStore from "./configureStore";
+import { render } from "react-dom";
+import { Provider } from "react-redux";
+import { ConnectedRouter } from "react-router-redux";
+import store, { history } from "./store";
 import App from "./containers/App";
-
 //import registerServiceWorker from "./registerServiceWorker";
-
-//const store = configureStore();
 
 const rootEl = document.getElementById("root");
 
-ReactDOM.render(<App />, rootEl);
-//ReactDOM.render(<Root store={store} />, document.getElementById("root"));
+console.log(store.getState());
+
+render(
+  <Provider store={store}>
+    <ConnectedRouter history={history}>
+      <div>
+        <App />
+      </div>
+    </ConnectedRouter>
+  </Provider>,
+  rootEl
+);
+
 //registerServiceWorker();

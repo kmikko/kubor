@@ -1,0 +1,35 @@
+{
+  "kind": "Service",
+  "apiVersion": "v1",
+  "metadata": {
+    "name": "kubor",
+    "namespace": "default",
+    "selfLink": "/api/v1/namespaces/default/services/kubor",
+    "uid": "98e943db-9541-11e7-a046-080027896a56",
+    "resourceVersion": "3824",
+    "creationTimestamp": "2017-09-09T09:31:02Z",
+    "labels": {
+      "app": "kubor"
+    }
+  },
+  "spec": {
+    "ports": [
+      {
+        "protocol": "TCP",
+        "port": 4000,
+        "targetPort": 4000,
+        "nodePort": 30750
+      }
+    ],
+    "selector": {
+      "app": "kubor"
+    },
+    "clusterIP": "10.0.0.250",
+    "type": "NodePort",
+    "sessionAffinity": "None",
+    "externalTrafficPolicy": "Cluster"
+  },
+  "status": {
+    "loadBalancer": {}
+  }
+}

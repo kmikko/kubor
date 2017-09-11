@@ -12,7 +12,8 @@ import {
 
 const NetworkUsage = props => {
   const { data } = props;
-  const strokeColors = ["#23d160", "#3273dc"];
+  const strokeColors = ["#7a92a3", "#0b62a4"];
+  //["#0c62a4", "#689dc6", "#3980b5", "#2678b5", "#0c62a4", "#a7b3bc", "#7a92a3"]
 
   return (
     <VictoryChart
@@ -33,7 +34,7 @@ const NetworkUsage = props => {
           axisLabel: { padding: 40 }
         }}
       />
-      {data.map((v, i) =>
+      {data.map((v, i) => (
         <VictoryLine
           key={i}
           data={v.values}
@@ -44,7 +45,7 @@ const NetworkUsage = props => {
           labels={d => `${(d.y / 1000).toFixed(2)} kBps`}
           labelComponent={<VictoryTooltip />}
         />
-      )}
+      ))}
     </VictoryChart>
   );
 };
