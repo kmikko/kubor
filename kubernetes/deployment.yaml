@@ -1,0 +1,19 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: kubor
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: kubor
+    spec:
+      containers:
+      - name: kubor
+        image: localhost:5000/kubor:latest
+        ports:
+        - containerPort: 4000
+      - name: kubectl
+        image: localhost:5000/kubectl:v1.9.0-alpha.0.704
+        args: ["proxy", "-p", "8001"]
