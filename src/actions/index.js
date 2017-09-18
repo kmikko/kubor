@@ -11,7 +11,7 @@ export const fetchCpuUsage = () => dispatch => {
   });
 
   return fetch(
-    "http://monitoring-grafana.kube-system/api/datasources/proxy/1/query?epoch=ms&q=SELECT+sum(%22value%22)+FROM+%22cpu%2Fusage_rate%22+WHERE+%22type%22+%3D+%27node%27+AND+time+%3E+now()+-+30m+GROUP+BY+time(1m),+%22nodename%22+fill(null)%0ASELECT+sum(%22value%22)+FROM+%22cpu%2Flimit%22+WHERE+%22type%22+%3D+%27node%27+AND+time+%3E+now()+-+30m+GROUP+BY+time(1m),+%22nodename%22+fill(null)%0ASELECT+sum(%22value%22)+FROM+%22cpu%2Frequest%22+WHERE+%22type%22+%3D+%27node%27+AND+time+%3E+now()+-+30m+GROUP+BY+time(1m),+%22nodename%22+fill(null)"
+    "http://monitoring-grafana.kube-system/api/datasources/proxy/1/query?db=k8s&q=SELECT%20sum(%22value%22)%20FROM%20%22cpu%2Fusage_rate%22%20WHERE%20%22type%22%20%3D%20%27node%27%20AND%20time%20%3E%20now()%20-%2030m%20GROUP%20BY%20time(1m)%2C%20%22nodename%22%20fill(null)%0A%3BSELECT%20sum(%22value%22)%20FROM%20%22cpu%2Flimit%22%20WHERE%20%22type%22%20%3D%20%27node%27%20AND%20time%20%3E%20now()%20-%2030m%20GROUP%20BY%20time(1m)%2C%20%22nodename%22%20fill(null)%0A%3BSELECT%20sum(%22value%22)%20FROM%20%22cpu%2Frequest%22%20WHERE%20%22type%22%20%3D%20%27node%27%20AND%20time%20%3E%20now()%20-%2030m%20GROUP%20BY%20time(1m)%2C%20%22nodename%22%20fill(null)&epoch=ms"
   )
     .then(response => response.json())
     .then(data => data.results)
@@ -45,7 +45,7 @@ export const fetchNetworkUsage = () => dispatch => {
   });
 
   return fetch(
-    "http://monitoring-grafana.kube-system/api/datasources/proxy/1/query?epoch=ms&q=SELECT%20sum%28%22value%22%29%20FROM%20%22network%2Ftx_rate%22%20WHERE%20%22type%22%20%3D%20%27pod%27%20AND%20time%20%3E%20now%28%29%20-%2030m%20GROUP%20BY%20time%281m%29%20fill%28null%29%0D%0ASELECT%20sum%28%22value%22%29%20FROM%20%22network%2Frx_rate%22%20WHERE%20%22type%22%20%3D%20%27pod%27%20AND%20time%20%3E%20now%28%29%20-%2030m%20GROUP%20BY%20time%281m%29%20fill%28null%29"
+    "http://monitoring-grafana.kube-system/api/datasources/proxy/1/query?db=k8s&q=%3BSELECT%20sum(%22value%22)%20FROM%20%22network%2Ftx_rate%22%20WHERE%20time%20%3E%20now()%20-%2030m%20GROUP%20BY%20time(1m)%20fill(null)&epoch=ms"
   )
     .then(response => response.json())
     .then(data => data.results)
@@ -67,6 +67,62 @@ export const fetchNetworkUsage = () => dispatch => {
       error => {
         dispatch({
           type: "FETCH_NETWORK_USAGE_FAILURE",
+          message: "Something went wrong"
+        });
+      }
+    );
+};
+
+export const fetchKubernetesNamespaces = () => dispatch => {
+  dispatch({
+    type: "FETCH_KUBERNETES_NAMESPACES_REQUEST"
+  });
+
+  return fetch(
+    "http://monitoring-grafana.kube-system/api/datasources/proxy/1/query?db=k8s&q=SHOW%20TAG%20VALUES%20FROM%20%22uptime%22%20WITH%20KEY%20%3D%20%22namespace_name%22&epoch=ms"
+  )
+    .then(response => response.json())
+    .then(data => data.results[0]["series"][0]["values"].map(v => v[1]))
+    .then(
+      data => {
+        dispatch({
+          type: "FETCH_KUBERNETES_NAMESPACES_SUCCESS",
+          response: data
+        });
+      },
+      error => {
+        dispatch({
+          type: "FETCH_KUBERNETES_NAMESPACES_FAILURE",
+          message: "Something went wrong"
+        });
+      }
+    );
+};
+
+export const fetchHistoricalMemoryUsage = (
+  start,
+  end,
+  namespace = "default"
+) => dispatch => {
+  dispatch({
+    type: "FETCH_HISTORICAL_MEMORY_USAGE_REQUEST"
+  });
+
+  return fetch(
+    `http://monitoring-grafana.kube-system/api/datasources/proxy/1/query?db=k8s&q=SELECT%20mean(%22value%22)%20FROM%20%22memory%2Fusage%22%20WHERE%20%22namespace_name%22%20%3D%20%27${namespace}%27%20AND%20time%20%3E%20${start}ms%20and%20time%20%3C%20${end}ms%20GROUP%20BY%20time(1h)%20fill(none)&epoch=ms`
+  )
+    .then(response => response.json())
+    .then(data => data.results[0]["series"][0]["values"])
+    .then(
+      data => {
+        dispatch({
+          type: "FETCH_HISTORICAL_MEMORY_USAGE_SUCCESS",
+          response: data
+        });
+      },
+      error => {
+        dispatch({
+          type: "FETCH_HISTORICAL_MEMORY_USAGE_FAILURE",
           message: "Something went wrong"
         });
       }

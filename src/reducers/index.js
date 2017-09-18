@@ -3,11 +3,13 @@ import { routerReducer } from "react-router-redux";
 
 import counter from "./counter";
 import usage from "./usage";
+import kubernetes from "./kubernetes";
 
 export default combineReducers({
   router: routerReducer,
   counter,
-  usage
+  usage,
+  kubernetes
 });
 
 export const makeIncrement = () => dispatch => {
