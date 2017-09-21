@@ -1,21 +1,32 @@
-import React from "react";
-import { connect } from "react-redux";
-import Flatpickr from "react-flatpickr";
-import "flatpickr/dist/themes/material_green.css";
+import React from 'react';
+import { connect } from 'react-redux';
+import Flatpickr from 'react-flatpickr';
+import 'flatpickr/dist/themes/material_green.css';
+import differenceInCalendarDays from 'date-fns/difference_in_calendar_days';
 
-import { fetchKubernetesNamespaces } from "../actions";
+import {
+  fetchKubernetesNamespaces,
+  fetchCpuUsage,
+  fetchCpuTotal,
+  fetchMemoryUsage,
+  fetchMemoryTotal,
+  fetchNetworkUsage,
+  fetchNetworkTotal,
+  fetchDiskUsage,
+  fetchDiskTotal
+} from '../actions';
 
-import CheckboxGroup from "../components/CheckboxGroup";
+import CheckboxGroup from '../components/CheckboxGroup';
 
 class Reports extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      namespace: "",
-      resources: ["cpu", "ram", "storage", "network"],
-      timePeriod: [new Date(2017, 8, 1), new Date(2017, 8, 16)],
-      usage: "hourly"
+      namespace: '',
+      resources: ['cpu', 'ram', 'storage', 'network'],
+      timePeriod: [new Date(2017, 8, 1), new Date(2017, 8, 30)],
+      usage: 'hourly'
     };
 
     this.handleNamespaceChange = this.handleNamespaceChange.bind(this);
@@ -30,7 +41,7 @@ class Reports extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (this.state.namespace === "" && nextProps.namespaces.length > 0) {
+    if (this.state.namespace === '' && nextProps.namespaces.length > 0) {
       this.setState({
         namespace: nextProps.namespaces[0]
       });
@@ -80,12 +91,126 @@ class Reports extends React.Component {
       usage: this.state.usage
     };
 
-    console.log(JSON.stringify(values));
+    const { namespace, usage } = this.state;
+
+    //console.log(JSON.stringify(values));
+    const start = Math.round(this.state.timePeriod[0] / 1000);
+    const end = Math.round(
+      this.state.timePeriod[1].setHours(23, 59, 59) / 1000
+    );
+
+    const step = { hourly: '1h', daily: '1d' }[usage];
+
+    // TODO: step
+    this.props.getCpuUsage(start, end, step, namespace);
+    this.props.getCpuTotal(start, end, step, namespace);
+    this.props.getMemoryUsage(start, end, step, namespace);
+    this.props.getMemoryTotal(start, end, step, namespace);
+    this.props.getNetworkUsage(start, end, step, namespace);
+    this.props.getNetworkTotal(start, end, step, namespace);
+    this.props.getDiskUsage(start, end, step, namespace);
+    this.props.getDiskTotal(start, end, step, namespace);
+  }
+
+  calculateNamespaceResourceUsage(usage, total) {
+    if (usage.length !== total.length) {
+      return [];
+    }
+
+    let percentage = [];
+
+    for (let i = 0; i < usage.length - 1; i++) {
+      percentage.push([usage[i][0], usage[i][1] / total[i][1] || 0]);
+    }
+    return percentage;
   }
 
   render() {
-    console.log("state", JSON.stringify(this.state));
-    const { namespaces } = this.props;
+    console.log('props', this.props);
+    const {
+      namespaces,
+      cpuUsage,
+      cpuTotal,
+      memoryUsage,
+      memoryTotal,
+      networkUsage,
+      networkTotal,
+      diskUsage,
+      diskTotal
+    } = this.props;
+
+    // TODO
+    const daysInMonth = 29;
+    const clusterCpuPrice = 1000 / 2 / (daysInMonth * 24);
+    const clusterMemoryPrice = 1000 / 2 / (daysInMonth * 24);
+    const clusterNetworkPrice = 1000 / 2 / (daysInMonth * 24);
+    const clusterDiskPrice = 1000 / 2 / (daysInMonth * 24);
+
+    const usageStep =
+      differenceInCalendarDays(
+        this.state.timePeriod[1],
+        this.state.timePeriod[0]
+      ) +
+      1 * (this.state.usage === 'hourly' ? 24 : 1);
+
+    // CPU
+    const cpuTotalPrice = this.calculateNamespaceResourceUsage(
+      cpuUsage,
+      cpuTotal
+    )
+      .map(x => x[1] * clusterCpuPrice)
+      .reduce((prev, curr) => prev + curr, 0);
+    console.log('cpuPrice', cpuTotalPrice);
+    const cpuUsageUnits = cpuUsage.filter(x => x[1] !== 0).length;
+    const cpuStepPrice = cpuTotalPrice / cpuUsageUnits || 0;
+
+    // Memory
+    const memoryTotalPrice = this.calculateNamespaceResourceUsage(
+      memoryUsage,
+      memoryTotal
+    )
+      .map(x => x[1] * clusterMemoryPrice)
+      .reduce((prev, curr) => prev + curr, 0);
+    const memoryUsageUnits = memoryUsage.filter(x => x[1] !== 0).length;
+    const memoryStepPrice = memoryTotalPrice / memoryUsageUnits || 0;
+    console.log('memoryPrice', memoryTotalPrice);
+
+    // Network
+    const networkTotalPrice = this.calculateNamespaceResourceUsage(
+      networkUsage,
+      networkTotal
+    )
+      .map(x => x[1] * clusterNetworkPrice)
+      .reduce((prev, curr) => prev + curr, 0);
+    console.log('networkPrice', networkTotalPrice);
+    // TODO: Converter from bytes to reasonable unit (kilo/mega/giga)
+    const networkUsageUnits = networkUsage.filter(x => x[1] !== 0).length;
+    const networkTotalUsage =
+      networkUsage.reduce((prev, curr) => prev + curr[1], 0) / 1000 / 1000;
+    console.log('networkTotalUsage', networkTotalUsage);
+    const networkStepPrice = networkTotalPrice / networkUsageUnits || 0;
+
+    // Disk
+    const diskTotalPrice = this.calculateNamespaceResourceUsage(
+      diskUsage,
+      diskTotal
+    )
+      .map(x => x[1] * clusterDiskPrice)
+      .reduce((prev, curr) => prev + curr, 0);
+    console.log('diskPrice', diskTotalPrice);
+    const diskUsageUnits = diskUsage.filter(x => x[1] !== 0).length;
+    const diskTotalUsage =
+      diskUsage.reduce((prev, curr) => (curr[1] === 0 ? prev : curr[1]), 0) /
+      1000 /
+      1000;
+    console.log('diskTotalUsage', diskTotalUsage);
+    const diskStepPrice = diskTotalPrice / diskUsageUnits || 0;
+
+    const stepPrice =
+      memoryStepPrice + cpuStepPrice + networkStepPrice + diskStepPrice;
+    const totalPrice =
+      memoryTotalPrice + cpuTotalPrice + networkTotalPrice + diskTotalPrice;
+
     return (
       <div>
         <div className="columns">
@@ -131,7 +256,7 @@ class Reports extends React.Component {
                           name="resource"
                           value="cpu"
                           onChange={this.handleResourceChange}
-                          checked={this.state.resources.indexOf("cpu") > -1}
+                          checked={this.state.resources.indexOf('cpu') > -1}
                         />
                         <label htmlFor="cpuCheckbox">CPU</label>
                         <input
@@ -141,7 +266,7 @@ class Reports extends React.Component {
                           name="resource"
                           value="ram"
                           onChange={this.handleResourceChange}
-                          checked={this.state.resources.indexOf("ram") > -1}
+                          checked={this.state.resources.indexOf('ram') > -1}
                         />
                         <label htmlFor="ramCheckbox">RAM</label>
                         <input
@@ -151,7 +276,7 @@ class Reports extends React.Component {
                           name="resource"
                           value="network"
                           onChange={this.handleResourceChange}
-                          checked={this.state.resources.indexOf("network") > -1}
+                          checked={this.state.resources.indexOf('network') > -1}
                         />
                         <label htmlFor="networkCheckbox">Network</label>
                         <input
@@ -161,7 +286,7 @@ class Reports extends React.Component {
                           name="resource"
                           value="storage"
                           onChange={this.handleResourceChange}
-                          checked={this.state.resources.indexOf("storage") > -1}
+                          checked={this.state.resources.indexOf('storage') > -1}
                         />
                         <label htmlFor="storageCheckbox">Storage</label>
                       </div>
@@ -177,7 +302,7 @@ class Reports extends React.Component {
                         <Flatpickr
                           options={{
                             inline: true,
-                            mode: "range",
+                            mode: 'range',
                             defaultDate: this.state.timePeriod
                           }}
                           onChange={this.handleTimePeriodChange}
@@ -198,7 +323,7 @@ class Reports extends React.Component {
                           type="radio"
                           name="usage"
                           onChange={this.handleUsageChange}
-                          checked={this.state.usage === "hourly"}
+                          checked={this.state.usage === 'hourly'}
                           value="hourly"
                         />
                         <label htmlFor="hourlyRadio">Hourly</label>
@@ -208,7 +333,7 @@ class Reports extends React.Component {
                           type="radio"
                           name="usage"
                           onChange={this.handleUsageChange}
-                          checked={this.state.usage === "daily"}
+                          checked={this.state.usage === 'daily'}
                           value="daily"
                         />
                         <label htmlFor="dailyRadio">Daily</label>
@@ -249,41 +374,47 @@ class Reports extends React.Component {
                       <tr>
                         <th>Resource</th>
                         <th>Usage</th>
-                        <th>Per day</th>
+                        <th>Per hour</th>
                         <th>Total</th>
                       </tr>
                     </thead>
                     <tbody>
                       <tr>
                         <td>CPU</td>
-                        <td>480 hours</td>
-                        <td>0.82€</td>
-                        <td>16.48€</td>
+                        <td>
+                          {cpuUsageUnits}&nbsp;
+                          {this.state.usage === 'hourly' ? 'hours' : 'days'}
+                        </td>
+                        <td>{cpuStepPrice.toFixed(2)}€</td>
+                        <td>{cpuTotalPrice.toFixed(2)}€</td>
                       </tr>
                       <tr>
                         <td>RAM</td>
-                        <td>480 hours</td>
-                        <td>0.52€</td>
-                        <td>10.37€</td>
+                        <td>
+                          {memoryUsageUnits}&nbsp;
+                          {this.state.usage === 'hourly' ? 'hours' : 'days'}
+                        </td>
+                        <td>{memoryStepPrice.toFixed(2)}€</td>
+                        <td>{memoryTotalPrice.toFixed(2)}€</td>
                       </tr>
                       <tr>
-                        <td>Network</td>
-                        <td>4.78 GB</td>
-                        <td>0.26€</td>
-                        <td>5.14€</td>
+                        <td>Network (Tx)</td>
+                        <td>{networkTotalUsage.toFixed(2)} MB</td>
+                        <td>{networkStepPrice.toFixed(2)}€</td>
+                        <td>{networkTotalPrice.toFixed(2)}€</td>
                       </tr>
                       <tr>
                         <td>Disk</td>
-                        <td>348 MB</td>
-                        <td>0.06€</td>
-                        <td>1.30€</td>
+                        <td>{diskTotalUsage.toFixed(2)} MB</td>
+                        <td>{diskStepPrice.toFixed(2)}€</td>
+                        <td>{diskTotalPrice.toFixed(2)}€</td>
                       </tr>
                     </tbody>
                     <tfoot>
                       <tr>
                         <th colSpan={2}>TOTAL</th>
-                        <th>2.20€</th>
-                        <th>33.29€</th>
+                        <th>{stepPrice.toFixed(2)}€</th>
+                        <th>{totalPrice.toFixed(2)}€</th>
                       </tr>
                     </tfoot>
                   </table>
@@ -298,9 +429,25 @@ class Reports extends React.Component {
 }
 
 const mapStateToProps = state => ({
-  namespaces: state.kubernetes.namespaces
+  namespaces: state.kubernetes.namespaces,
+  cpuUsage: state.usage.cpu,
+  cpuTotal: state.total.cpu,
+  memoryUsage: state.usage.memory,
+  memoryTotal: state.total.memory,
+  networkUsage: state.usage.network,
+  networkTotal: state.total.network,
+  diskUsage: state.usage.disk,
+  diskTotal: state.total.disk
 });
 
 export default connect(mapStateToProps, {
-  getKubernetesNamespaces: fetchKubernetesNamespaces
+  getKubernetesNamespaces: fetchKubernetesNamespaces,
+  getCpuUsage: fetchCpuUsage,
+  getCpuTotal: fetchCpuTotal,
+  getMemoryUsage: fetchMemoryUsage,
+  getMemoryTotal: fetchMemoryTotal,
+  getNetworkUsage: fetchNetworkUsage,
+  getNetworkTotal: fetchNetworkTotal,
+  getDiskUsage: fetchDiskUsage,
+  getDiskTotal: fetchDiskTotal
 })(Reports);

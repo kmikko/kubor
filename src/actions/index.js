@@ -5,69 +5,263 @@ import * as api from "../api";
 import { getIsFetching } from "../reducers";
 */
 
-export const fetchCpuUsage = () => dispatch => {
+export const fetchCpuUsage = (
+  start,
+  end,
+  step = '1h',
+  namespace = 'default'
+) => dispatch => {
   dispatch({
-    type: "FETCH_CPU_USAGE_REQUEST"
+    type: 'FETCH_CPU_USAGE_REQUEST'
   });
 
   return fetch(
-    "http://monitoring-grafana.kube-system/api/datasources/proxy/1/query?db=k8s&q=SELECT%20sum(%22value%22)%20FROM%20%22cpu%2Fusage_rate%22%20WHERE%20%22type%22%20%3D%20%27node%27%20AND%20time%20%3E%20now()%20-%2030m%20GROUP%20BY%20time(1m)%2C%20%22nodename%22%20fill(null)%0A%3BSELECT%20sum(%22value%22)%20FROM%20%22cpu%2Flimit%22%20WHERE%20%22type%22%20%3D%20%27node%27%20AND%20time%20%3E%20now()%20-%2030m%20GROUP%20BY%20time(1m)%2C%20%22nodename%22%20fill(null)%0A%3BSELECT%20sum(%22value%22)%20FROM%20%22cpu%2Frequest%22%20WHERE%20%22type%22%20%3D%20%27node%27%20AND%20time%20%3E%20now()%20-%2030m%20GROUP%20BY%20time(1m)%2C%20%22nodename%22%20fill(null)&epoch=ms"
+    `http://192.168.99.100:32555/api/datasources/proxy/2/api/v1/query_range?query=sum%20(rate%20(container_cpu_usage_seconds_total%7Bnamespace%3D%22default%22%7D%5B1m%5D%20)%20OR%20on()%20vector(0))&start=${start}&end=${end}&step=${step}`
   )
     .then(response => response.json())
-    .then(data => data.results)
-    .then(data => data.map(result => result.series || []))
-    .then(data => [].concat.apply([], data))
-    .then(data =>
-      data.map(serie => ({
-        name: serie.name,
-        values: serie.values
-      }))
-    )
+    .then(data => data['data']['result'][0]['values'])
+    .then(data => data.map(x => [x[0], parseFloat(x[1])]))
     .then(
       data => {
         dispatch({
-          type: "FETCH_CPU_USAGE_SUCCESS",
+          type: 'FETCH_CPU_USAGE_SUCCESS',
           response: data
         });
       },
       error => {
         dispatch({
-          type: "FETCH_CPU_USAGE_FAILURE",
-          message: "Something went wrong"
+          type: 'FETCH_CPU_USAGE_FAILURE',
+          message: 'Something went wrong'
         });
       }
     );
 };
 
-export const fetchNetworkUsage = () => dispatch => {
+export const fetchCpuTotal = (start, end, step = '1h') => dispatch => {
   dispatch({
-    type: "FETCH_NETWORK_USAGE_REQUEST"
+    type: 'FETCH_CPU_TOTAL_REQUEST'
   });
 
   return fetch(
-    "http://monitoring-grafana.kube-system/api/datasources/proxy/1/query?db=k8s&q=%3BSELECT%20sum(%22value%22)%20FROM%20%22network%2Ftx_rate%22%20WHERE%20time%20%3E%20now()%20-%2030m%20GROUP%20BY%20time(1m)%20fill(null)&epoch=ms"
+    `http://192.168.99.100:32555/api/datasources/proxy/2/api/v1/query_range?query=sum(machine_cpu_cores%20OR%20on()%20vector(0))%20&start=${start}&end=${end}&step=${step}`
   )
     .then(response => response.json())
-    .then(data => data.results)
-    .then(data => data.map(result => result.series || []))
-    .then(data => [].concat.apply([], data))
-    .then(data =>
-      data.map(serie => ({
-        name: serie.name,
-        values: serie.values
-      }))
-    )
+    .then(data => data['data']['result'][0]['values'])
+    .then(data => data.map(x => [x[0], parseFloat(x[1])]))
     .then(
       data => {
         dispatch({
-          type: "FETCH_NETWORK_USAGE_SUCCESS",
+          type: 'FETCH_CPU_TOTAL_SUCCESS',
           response: data
         });
       },
       error => {
         dispatch({
-          type: "FETCH_NETWORK_USAGE_FAILURE",
-          message: "Something went wrong"
+          type: 'FETCH_CPU_TOTAL_FAILURE',
+          message: 'Something went wrong'
+        });
+      }
+    );
+};
+
+export const fetchMemoryUsage = (
+  start,
+  end,
+  step = '1h',
+  namespace = 'default'
+) => dispatch => {
+  dispatch({
+    type: 'FETCH_MEMORY_USAGE_REQUEST'
+  });
+
+  return fetch(
+    `http://192.168.99.100:32555/api/datasources/proxy/2/api/v1/query_range?query=sum(container_memory_usage_bytes%7Bnamespace%3D%22${namespace}%22%7D%20OR%20on()%20vector(0))&start=${start}&end=${end}&step=${step}`
+  )
+    .then(response => response.json())
+    .then(data => data['data']['result'][0]['values'])
+    .then(data => data.map(x => [x[0], parseFloat(x[1])]))
+    .then(
+      data => {
+        dispatch({
+          type: 'FETCH_MEMORY_USAGE_SUCCESS',
+          response: data
+        });
+      },
+      error => {
+        dispatch({
+          type: 'FETCH_MEMORY_USAGE_FAILURE',
+          message: 'Something went wrong'
+        });
+      }
+    );
+};
+
+export const fetchMemoryTotal = (start, end, step = '1h') => dispatch => {
+  dispatch({
+    type: 'FETCH_MEMORY_TOTAL_REQUEST'
+  });
+
+  return fetch(
+    `http://192.168.99.100:32555/api/datasources/proxy/2/api/v1/query_range?query=sum(machine_memory_bytes%20OR%20on()%20vector(0))&start=${start}&end=${end}&step=${step}`
+  )
+    .then(response => response.json())
+    .then(data => data['data']['result'][0]['values'])
+    .then(data => data.map(x => [x[0], parseFloat(x[1])]))
+    .then(
+      data => {
+        dispatch({
+          type: 'FETCH_MEMORY_TOTAL_SUCCESS',
+          response: data
+        });
+      },
+      error => {
+        dispatch({
+          type: 'FETCH_MEMORY_TOTAL_FAILURE',
+          message: 'Something went wrong'
+        });
+      }
+    );
+};
+
+export const fetchNetworkUsage = (
+  start,
+  end,
+  step = '1h',
+  namespace = 'default'
+) => dispatch => {
+  dispatch({
+    type: 'FETCH_NETWORK_USAGE_REQUEST'
+  });
+
+  return fetch(
+    `http://192.168.99.100:32555/api/datasources/proxy/2/api/v1/query_range?query=sum(container_network_transmit_bytes_total%7Bnamespace%3D%22${namespace}%22%7D%20OR%20on()%20vector(0))&start=${start}&end=${end}&step=${step}`
+  )
+    .then(response => response.json())
+    .then(data => data['data']['result'][0]['values'])
+    .then(data => data.map(x => [x[0], parseFloat(x[1])]))
+    .then(data =>
+      data
+        .reduce((prev, currVal, currIdx) => [
+          ...prev,
+          [
+            data[currIdx][0],
+            data[currIdx][1] === 0 || data[currIdx - 1][1] === 0
+              ? 0
+              : data[currIdx][1] - data[currIdx - 1][1]
+          ]
+        ])
+        .slice(2)
+    )
+    .then(
+      data => {
+        dispatch({
+          type: 'FETCH_NETWORK_USAGE_SUCCESS',
+          response: data
+        });
+      },
+      error => {
+        dispatch({
+          type: 'FETCH_NETWORK_USAGE_FAILURE',
+          message: 'Something went wrong'
+        });
+      }
+    );
+};
+
+export const fetchNetworkTotal = (start, end, step = '1h') => dispatch => {
+  dispatch({
+    type: 'FETCH_NETWORK_TOTAL_REQUEST'
+  });
+
+  return fetch(
+    `http://192.168.99.100:32555/api/datasources/proxy/2/api/v1/query_range?query=sum(container_network_transmit_bytes_total%20OR%20on()%20vector(0))&start=${start}&end=${end}&step=${step}`
+  )
+    .then(response => response.json())
+    .then(data => data['data']['result'][0]['values'])
+    .then(data => data.map(x => [x[0], parseFloat(x[1])]))
+    .then(data =>
+      data
+        .reduce((prev, currVal, currIdx) => [
+          ...prev,
+          [
+            data[currIdx][0],
+            data[currIdx][1] === 0 || data[currIdx - 1][1] === 0
+              ? 0
+              : data[currIdx][1] - data[currIdx - 1][1]
+          ]
+        ])
+        .slice(2)
+    )
+    .then(
+      data => {
+        dispatch({
+          type: 'FETCH_NETWORK_TOTAL_SUCCESS',
+          response: data
+        });
+      },
+      error => {
+        dispatch({
+          type: 'FETCH_NETWORK_TOTAL_FAILURE',
+          message: 'Something went wrong'
+        });
+      }
+    );
+};
+
+export const fetchDiskUsage = (
+  start,
+  end,
+  step = '1h',
+  namespace = 'default'
+) => dispatch => {
+  dispatch({
+    type: 'FETCH_DISK_USAGE_REQUEST'
+  });
+
+  return fetch(
+    `http://192.168.99.100:32555/api/datasources/proxy/2/api/v1/query_range?query=sum(container_fs_usage_bytes%7Bnamespace%3D%22${namespace}%22%7D)%20OR%20on()%20vector(0)&start=${start}&end=${end}&step=${step}`
+  )
+    .then(response => response.json())
+    .then(data => data['data']['result'][0]['values'])
+    .then(data => data.map(x => [x[0], parseFloat(x[1])]))
+    .then(
+      data => {
+        dispatch({
+          type: 'FETCH_DISK_USAGE_SUCCESS',
+          response: data
+        });
+      },
+      error => {
+        dispatch({
+          type: 'FETCH_DISK_USAGE_FAILURE',
+          message: 'Something went wrong'
+        });
+      }
+    );
+};
+
+export const fetchDiskTotal = (start, end, step = '1h') => dispatch => {
+  dispatch({
+    type: 'FETCH_DISK_TOTAL_REQUEST'
+  });
+
+  return fetch(
+    `http://192.168.99.100:32555/api/datasources/proxy/2/api/v1/query_range?query=sum(container_fs_usage_bytes)%20OR%20on()%20vector(0)&start=${start}&end=${end}&step=${step}`
+  )
+    .then(response => response.json())
+    .then(data => data['data']['result'][0]['values'])
+    .then(data => data.map(x => [x[0], parseFloat(x[1])]))
+    .then(
+      data => {
+        dispatch({
+          type: 'FETCH_DISK_TOTAL_SUCCESS',
+          response: data
+        });
+      },
+      error => {
+        dispatch({
+          type: 'FETCH_DISK_TOTAL_FAILURE',
+          message: 'Something went wrong'
         });
       }
     );
@@ -75,55 +269,25 @@ export const fetchNetworkUsage = () => dispatch => {
 
 export const fetchKubernetesNamespaces = () => dispatch => {
   dispatch({
-    type: "FETCH_KUBERNETES_NAMESPACES_REQUEST"
+    type: 'FETCH_KUBERNETES_NAMESPACES_REQUEST'
   });
 
   return fetch(
-    "http://monitoring-grafana.kube-system/api/datasources/proxy/1/query?db=k8s&q=SHOW%20TAG%20VALUES%20FROM%20%22uptime%22%20WITH%20KEY%20%3D%20%22namespace_name%22&epoch=ms"
+    'http://192.168.99.100:32555/api/datasources/proxy/1/query?db=k8s&q=SHOW%20TAG%20VALUES%20FROM%20%22uptime%22%20WITH%20KEY%20%3D%20%22namespace_name%22&epoch=ms'
   )
     .then(response => response.json())
-    .then(data => data.results[0]["series"][0]["values"].map(v => v[1]))
+    .then(data => data.results[0]['series'][0]['values'].map(v => v[1]))
     .then(
       data => {
         dispatch({
-          type: "FETCH_KUBERNETES_NAMESPACES_SUCCESS",
+          type: 'FETCH_KUBERNETES_NAMESPACES_SUCCESS',
           response: data
         });
       },
       error => {
         dispatch({
-          type: "FETCH_KUBERNETES_NAMESPACES_FAILURE",
-          message: "Something went wrong"
-        });
-      }
-    );
-};
-
-export const fetchHistoricalMemoryUsage = (
-  start,
-  end,
-  namespace = "default"
-) => dispatch => {
-  dispatch({
-    type: "FETCH_HISTORICAL_MEMORY_USAGE_REQUEST"
-  });
-
-  return fetch(
-    `http://monitoring-grafana.kube-system/api/datasources/proxy/1/query?db=k8s&q=SELECT%20mean(%22value%22)%20FROM%20%22memory%2Fusage%22%20WHERE%20%22namespace_name%22%20%3D%20%27${namespace}%27%20AND%20time%20%3E%20${start}ms%20and%20time%20%3C%20${end}ms%20GROUP%20BY%20time(1h)%20fill(none)&epoch=ms`
-  )
-    .then(response => response.json())
-    .then(data => data.results[0]["series"][0]["values"])
-    .then(
-      data => {
-        dispatch({
-          type: "FETCH_HISTORICAL_MEMORY_USAGE_SUCCESS",
-          response: data
-        });
-      },
-      error => {
-        dispatch({
-          type: "FETCH_HISTORICAL_MEMORY_USAGE_FAILURE",
-          message: "Something went wrong"
+          type: 'FETCH_KUBERNETES_NAMESPACES_FAILURE',
+          message: 'Something went wrong'
         });
       }
     );

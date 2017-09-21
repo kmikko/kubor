@@ -1,25 +1,29 @@
-import { combineReducers } from "redux";
-import { routerReducer } from "react-router-redux";
+import { combineReducers } from 'redux';
+import { routerReducer } from 'react-router-redux';
 
-import counter from "./counter";
-import usage from "./usage";
-import kubernetes from "./kubernetes";
+import counter from './counter';
+import usage from './usage';
+import kubernetes from './kubernetes';
+import historical from './historical';
+import total from './total';
 
 export default combineReducers({
   router: routerReducer,
   counter,
   usage,
-  kubernetes
+  kubernetes,
+  historical,
+  total
 });
 
 export const makeIncrement = () => dispatch => {
   dispatch({
-    type: "counter/INCREMENT_REQUESTED"
+    type: 'counter/INCREMENT_REQUESTED'
   });
 
   setTimeout(() => {
     dispatch({
-      type: "counter/INCREMENT"
+      type: 'counter/INCREMENT'
     });
   }, 3000);
 };
