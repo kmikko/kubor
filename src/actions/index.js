@@ -5,6 +5,10 @@ import * as api from "../api";
 import { getIsFetching } from "../reducers";
 */
 
+const GRAFANA_URL =
+  process.env.REACT_APP_GRAFANA_URL ||
+  'http://prometheus-prometheus-server.default.svc.cluster.local';
+
 export const fetchCpuUsage = (
   start,
   end,
@@ -16,7 +20,7 @@ export const fetchCpuUsage = (
   });
 
   return fetch(
-    `http://192.168.99.100:32555/api/datasources/proxy/2/api/v1/query_range?query=sum%20(rate%20(container_cpu_usage_seconds_total%7Bnamespace%3D%22default%22%7D%5B1m%5D%20)%20OR%20on()%20vector(0))&start=${start}&end=${end}&step=${step}`
+    `${GRAFANA_URL}/api/v1/query_range?query=sum%20(rate%20(container_cpu_usage_seconds_total%7Bnamespace%3D%22default%22%7D%5B1m%5D%20)%20OR%20on()%20vector(0))&start=${start}&end=${end}&step=${step}`
   )
     .then(response => response.json())
     .then(data => data['data']['result'][0]['values'])
@@ -43,7 +47,7 @@ export const fetchCpuTotal = (start, end, step = '1h') => dispatch => {
   });
 
   return fetch(
-    `http://192.168.99.100:32555/api/datasources/proxy/2/api/v1/query_range?query=sum(machine_cpu_cores%20OR%20on()%20vector(0))%20&start=${start}&end=${end}&step=${step}`
+    `${GRAFANA_URL}/api/v1/query_range?query=sum(machine_cpu_cores%20OR%20on()%20vector(0))%20&start=${start}&end=${end}&step=${step}`
   )
     .then(response => response.json())
     .then(data => data['data']['result'][0]['values'])
@@ -75,7 +79,7 @@ export const fetchMemoryUsage = (
   });
 
   return fetch(
-    `http://192.168.99.100:32555/api/datasources/proxy/2/api/v1/query_range?query=sum(container_memory_usage_bytes%7Bnamespace%3D%22${namespace}%22%7D%20OR%20on()%20vector(0))&start=${start}&end=${end}&step=${step}`
+    `${GRAFANA_URL}/api/v1/query_range?query=sum(container_memory_usage_bytes%7Bnamespace%3D%22${namespace}%22%7D%20OR%20on()%20vector(0))&start=${start}&end=${end}&step=${step}`
   )
     .then(response => response.json())
     .then(data => data['data']['result'][0]['values'])
@@ -102,7 +106,7 @@ export const fetchMemoryTotal = (start, end, step = '1h') => dispatch => {
   });
 
   return fetch(
-    `http://192.168.99.100:32555/api/datasources/proxy/2/api/v1/query_range?query=sum(machine_memory_bytes%20OR%20on()%20vector(0))&start=${start}&end=${end}&step=${step}`
+    `${GRAFANA_URL}/api/v1/query_range?query=sum(machine_memory_bytes%20OR%20on()%20vector(0))&start=${start}&end=${end}&step=${step}`
   )
     .then(response => response.json())
     .then(data => data['data']['result'][0]['values'])
@@ -134,7 +138,7 @@ export const fetchNetworkUsage = (
   });
 
   return fetch(
-    `http://192.168.99.100:32555/api/datasources/proxy/2/api/v1/query_range?query=sum(container_network_transmit_bytes_total%7Bnamespace%3D%22${namespace}%22%7D%20OR%20on()%20vector(0))&start=${start}&end=${end}&step=${step}`
+    `${GRAFANA_URL}/api/v1/query_range?query=sum(container_network_transmit_bytes_total%7Bnamespace%3D%22${namespace}%22%7D%20OR%20on()%20vector(0))&start=${start}&end=${end}&step=${step}`
   )
     .then(response => response.json())
     .then(data => data['data']['result'][0]['values'])
@@ -174,7 +178,7 @@ export const fetchNetworkTotal = (start, end, step = '1h') => dispatch => {
   });
 
   return fetch(
-    `http://192.168.99.100:32555/api/datasources/proxy/2/api/v1/query_range?query=sum(container_network_transmit_bytes_total%20OR%20on()%20vector(0))&start=${start}&end=${end}&step=${step}`
+    `${GRAFANA_URL}/api/v1/query_range?query=sum(container_network_transmit_bytes_total%20OR%20on()%20vector(0))&start=${start}&end=${end}&step=${step}`
   )
     .then(response => response.json())
     .then(data => data['data']['result'][0]['values'])
@@ -219,7 +223,7 @@ export const fetchDiskUsage = (
   });
 
   return fetch(
-    `http://192.168.99.100:32555/api/datasources/proxy/2/api/v1/query_range?query=sum(container_fs_usage_bytes%7Bnamespace%3D%22${namespace}%22%7D)%20OR%20on()%20vector(0)&start=${start}&end=${end}&step=${step}`
+    `${GRAFANA_URL}/api/v1/query_range?query=sum(container_fs_usage_bytes%7Bnamespace%3D%22${namespace}%22%7D)%20OR%20on()%20vector(0)&start=${start}&end=${end}&step=${step}`
   )
     .then(response => response.json())
     .then(data => data['data']['result'][0]['values'])
@@ -246,7 +250,7 @@ export const fetchDiskTotal = (start, end, step = '1h') => dispatch => {
   });
 
   return fetch(
-    `http://192.168.99.100:32555/api/datasources/proxy/2/api/v1/query_range?query=sum(container_fs_usage_bytes)%20OR%20on()%20vector(0)&start=${start}&end=${end}&step=${step}`
+    `${GRAFANA_URL}/api/v1/query_range?query=sum(container_fs_usage_bytes)%20OR%20on()%20vector(0)&start=${start}&end=${end}&step=${step}`
   )
     .then(response => response.json())
     .then(data => data['data']['result'][0]['values'])
@@ -272,11 +276,15 @@ export const fetchKubernetesNamespaces = () => dispatch => {
     type: 'FETCH_KUBERNETES_NAMESPACES_REQUEST'
   });
 
-  return fetch(
-    'http://192.168.99.100:32555/api/datasources/proxy/1/query?db=k8s&q=SHOW%20TAG%20VALUES%20FROM%20%22uptime%22%20WITH%20KEY%20%3D%20%22namespace_name%22&epoch=ms'
-  )
+  return fetch(`${GRAFANA_URL}/api/v1/query?query=kube_pod_info`)
     .then(response => response.json())
-    .then(data => data.results[0]['series'][0]['values'].map(v => v[1]))
+    .then(data =>
+      Array.from(
+        new Set(
+          data['data']['result'].map(result => result['metric']['namespace'])
+        )
+      )
+    )
     .then(
       data => {
         dispatch({
