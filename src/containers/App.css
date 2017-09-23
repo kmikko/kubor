@@ -49,3 +49,7 @@ input.flatpickr-input {
 .flatpickr-calendar.arrowTop:before {
   display: none;
 }
+
+.field.has-addons .control {
+  margin-bottom: 0px;
+}

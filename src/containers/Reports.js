@@ -1,8 +1,8 @@
-import React from 'react';
-import { connect } from 'react-redux';
-import Flatpickr from 'react-flatpickr';
-import 'flatpickr/dist/themes/material_green.css';
-import differenceInCalendarDays from 'date-fns/difference_in_calendar_days';
+import React from "react";
+import { connect } from "react-redux";
+import Flatpickr from "react-flatpickr";
+import "flatpickr/dist/themes/material_green.css";
+import differenceInCalendarDays from "date-fns/difference_in_calendar_days";
 
 import {
   fetchKubernetesNamespaces,
@@ -14,19 +14,20 @@ import {
   fetchNetworkTotal,
   fetchStorageUsage,
   fetchStorageTotal
-} from '../actions';
+} from "../actions";
 
-import CheckboxGroup from '../components/CheckboxGroup';
+import CheckboxGroup from "../components/CheckboxGroup";
 
 class Reports extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      namespace: '',
-      resources: ['cpu', 'memory', 'storage', 'network'],
+      namespace: "",
+      resources: ["cpu", "memory", "storage", "network"],
       timePeriod: [new Date(2017, 8, 1), new Date(2017, 8, 30)],
-      usage: 'hourly'
+      usage: "hourly",
+      fixedCosts: 0
     };
 
     this.handleNamespaceChange = this.handleNamespaceChange.bind(this);
@@ -34,6 +35,7 @@ class Reports extends React.Component {
     this.handleTimePeriodChange = this.handleTimePeriodChange.bind(this);
     this.handleUsageChange = this.handleUsageChange.bind(this);
     this.handleCalculateClick = this.handleCalculateClick.bind(this);
+    this.handleFixedCostsChange = this.handleFixedCostsChange.bind(this);
   }
 
   componentDidMount() {
@@ -41,7 +43,7 @@ class Reports extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (this.state.namespace === '' && nextProps.namespaces.length > 0) {
+    if (this.state.namespace === "" && nextProps.namespaces.length > 0) {
       this.setState({
         namespace: nextProps.namespaces[0]
       });
@@ -83,6 +85,12 @@ class Reports extends React.Component {
     });
   }
 
+  handleFixedCostsChange(event) {
+    this.setState({
+      fixedCosts: parseInt(event.target.value, 10)
+    });
+  }
+
   handleCalculateClick() {
     const values = {
       namespace: this.state.namespace,
@@ -100,19 +108,19 @@ class Reports extends React.Component {
 
     const step = { hourly: 3600, daily: 86400 }[usage];
 
-    if (resources.indexOf('cpu') > -1) {
+    if (resources.indexOf("cpu") > -1) {
       this.props.getCpuUsage(start, end, step, namespace);
       this.props.getCpuTotal(start, end, step, namespace);
     }
-    if (resources.indexOf('memory') > -1) {
+    if (resources.indexOf("memory") > -1) {
       this.props.getMemoryUsage(start, end, step, namespace);
       this.props.getMemoryTotal(start, end, step, namespace);
     }
-    if (resources.indexOf('network') > -1) {
+    if (resources.indexOf("network") > -1) {
       this.props.getNetworkUsage(start, end, step, namespace);
       this.props.getNetworkTotal(start, end, step, namespace);
     }
-    if (resources.indexOf('storage') > -1) {
+    if (resources.indexOf("storage") > -1) {
       this.props.getStorageUsage(start, end, step, namespace);
       this.props.getStorageTotal(start, end, step, namespace);
     }
@@ -132,7 +140,7 @@ class Reports extends React.Component {
   }
 
   render() {
-    console.log('props', this.props);
+    console.log("props", this.props);
     const {
       namespaces,
       cpuUsage,
@@ -145,7 +153,7 @@ class Reports extends React.Component {
       storageTotal
     } = this.props;
 
-    const { resources: selectedResources } = this.state;
+    const { resources: selectedResources, fixedCosts } = this.state;
 
     // TODO
     const daysInMonth = 29;
@@ -159,7 +167,7 @@ class Reports extends React.Component {
         this.state.timePeriod[1],
         this.state.timePeriod[0]
       ) +
-      1 * (this.state.usage === 'hourly' ? 24 : 1);
+      1 * (this.state.usage === "hourly" ? 24 : 1);
 
     // CPU
     const cpuTotalPrice = this.calculateNamespaceResourceUsage(
@@ -168,7 +176,7 @@ class Reports extends React.Component {
     )
       .map(x => x[1] * clusterCpuPrice)
       .reduce((prev, curr) => prev + curr, 0);
-    console.log('cpuPrice', cpuTotalPrice);
+    console.log("cpuPrice", cpuTotalPrice);
     const cpuUsageUnits = cpuUsage.filter(x => x[1] !== 0).length;
     const cpuStepPrice = cpuTotalPrice / cpuUsageUnits || 0;
 
@@ -181,7 +189,7 @@ class Reports extends React.Component {
       .reduce((prev, curr) => prev + curr, 0);
     const memoryUsageUnits = memoryUsage.filter(x => x[1] !== 0).length;
     const memoryStepPrice = memoryTotalPrice / memoryUsageUnits || 0;
-    console.log('memoryPrice', memoryTotalPrice);
+    console.log("memoryPrice", memoryTotalPrice);
 
     // Network
     const networkTotalPrice = this.calculateNamespaceResourceUsage(
@@ -190,12 +198,12 @@ class Reports extends React.Component {
     )
       .map(x => x[1] * clusterNetworkPrice)
       .reduce((prev, curr) => prev + curr, 0);
-    console.log('networkPrice', networkTotalPrice);
+    console.log("networkPrice", networkTotalPrice);
     // TODO: Converter from bytes to reasonable unit (kilo/mega/giga)
     const networkUsageUnits = networkUsage.filter(x => x[1] !== 0).length;
     const networkTotalUsage =
       networkUsage.reduce((prev, curr) => prev + curr[1], 0) / 1000 / 1000;
-    console.log('networkTotalUsage', networkTotalUsage);
+    console.log("networkTotalUsage", networkTotalUsage);
     const networkStepPrice = networkTotalPrice / networkUsageUnits || 0;
 
     // Storage
@@ -205,22 +213,23 @@ class Reports extends React.Component {
     )
       .map(x => x[1] * clusterStoragePrice)
       .reduce((prev, curr) => prev + curr, 0);
-    console.log('storagePrice', storageTotalPrice);
+    console.log("storagePrice", storageTotalPrice);
     const storageUsageUnits = storageUsage.filter(x => x[1] !== 0).length;
     const storageTotalUsage =
       storageUsage.reduce((prev, curr) => (curr[1] === 0 ? prev : curr[1]), 0) /
       1000 /
       1000;
-    console.log('storageTotalUsage', storageTotalUsage);
+    console.log("storageTotalUsage", storageTotalUsage);
     const storageStepPrice = storageTotalPrice / storageUsageUnits || 0;
 
     const stepPrice =
       memoryStepPrice + cpuStepPrice + networkStepPrice + storageStepPrice;
     const totalPrice =
-      (selectedResources.indexOf('memory') > -1 ? memoryTotalPrice : 0) +
-      (selectedResources.indexOf('cpu') > -1 ? cpuTotalPrice : 0) +
-      (selectedResources.indexOf('network') > -1 ? networkTotalPrice : 0) +
-      (selectedResources.indexOf('storage') > -1 ? storageTotalPrice : 0);
+      (selectedResources.indexOf("memory") > -1 ? memoryTotalPrice : 0) +
+      (selectedResources.indexOf("cpu") > -1 ? cpuTotalPrice : 0) +
+      (selectedResources.indexOf("network") > -1 ? networkTotalPrice : 0) +
+      (selectedResources.indexOf("storage") > -1 ? storageTotalPrice : 0) +
+      fixedCosts;
 
     return (
       <div>
@@ -267,7 +276,7 @@ class Reports extends React.Component {
                           name="resource"
                           value="cpu"
                           onChange={this.handleResourceChange}
-                          checked={this.state.resources.indexOf('cpu') > -1}
+                          checked={this.state.resources.indexOf("cpu") > -1}
                         />
                         <label htmlFor="cpuCheckbox">CPU</label>
                         <input
@@ -277,7 +286,7 @@ class Reports extends React.Component {
                           name="resource"
                           value="memory"
                           onChange={this.handleResourceChange}
-                          checked={this.state.resources.indexOf('memory') > -1}
+                          checked={this.state.resources.indexOf("memory") > -1}
                         />
                         <label htmlFor="memoryCheckbox">Memory</label>
                         <input
@@ -287,7 +296,7 @@ class Reports extends React.Component {
                           name="resource"
                           value="network"
                           onChange={this.handleResourceChange}
-                          checked={this.state.resources.indexOf('network') > -1}
+                          checked={this.state.resources.indexOf("network") > -1}
                         />
                         <label htmlFor="networkCheckbox">Network</label>
                         <input
@@ -297,9 +306,33 @@ class Reports extends React.Component {
                           name="resource"
                           value="storage"
                           onChange={this.handleResourceChange}
-                          checked={this.state.resources.indexOf('storage') > -1}
+                          checked={this.state.resources.indexOf("storage") > -1}
                         />
                         <label htmlFor="storageCheckbox">Storage</label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="field is-horizontal">
+                    <div className="field-label is-normal">
+                      <label className="label">Fixed costs</label>
+                    </div>
+                    <div className="field-body">
+                      <div className="field has-addons">
+                        <p className="control">
+                          <input
+                            className="input"
+                            type="number"
+                            min="0"
+                            step="1"
+                            placeholder="Monthly fixed costs"
+                            value={this.state.fixedCosts}
+                            onChange={this.handleFixedCostsChange}
+                          />
+                        </p>
+                        <p className="control">
+                          <a className="button is-static">€</a>
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -313,7 +346,7 @@ class Reports extends React.Component {
                         <Flatpickr
                           options={{
                             inline: true,
-                            mode: 'range',
+                            mode: "range",
                             defaultDate: this.state.timePeriod
                           }}
                           onChange={this.handleTimePeriodChange}
@@ -334,7 +367,7 @@ class Reports extends React.Component {
                           type="radio"
                           name="usage"
                           onChange={this.handleUsageChange}
-                          checked={this.state.usage === 'hourly'}
+                          checked={this.state.usage === "hourly"}
                           value="hourly"
                         />
                         <label htmlFor="hourlyRadio">Hourly</label>
@@ -344,8 +377,9 @@ class Reports extends React.Component {
                           type="radio"
                           name="usage"
                           onChange={this.handleUsageChange}
-                          checked={this.state.usage === 'daily'}
+                          checked={this.state.usage === "daily"}
                           value="daily"
+                          disabled
                         />
                         <label htmlFor="dailyRadio">Daily</label>
                       </div>
@@ -390,29 +424,29 @@ class Reports extends React.Component {
                       </tr>
                     </thead>
                     <tbody>
-                      {selectedResources.indexOf('cpu') > -1 ? (
+                      {selectedResources.indexOf("cpu") > -1 ? (
                         <tr>
                           <td>CPU</td>
                           <td>
                             {cpuUsageUnits}&nbsp;
-                            {this.state.usage === 'hourly' ? 'hours' : 'days'}
+                            {this.state.usage === "hourly" ? "hours" : "days"}
                           </td>
                           <td>{cpuStepPrice.toFixed(2)}€</td>
                           <td>{cpuTotalPrice.toFixed(2)}€</td>
                         </tr>
                       ) : null}
-                      {selectedResources.indexOf('memory') > -1 ? (
+                      {selectedResources.indexOf("memory") > -1 ? (
                         <tr>
                           <td>Memory</td>
                           <td>
                             {memoryUsageUnits}&nbsp;
-                            {this.state.usage === 'hourly' ? 'hours' : 'days'}
+                            {this.state.usage === "hourly" ? "hours" : "days"}
                           </td>
                           <td>{memoryStepPrice.toFixed(2)}€</td>
                           <td>{memoryTotalPrice.toFixed(2)}€</td>
                         </tr>
                       ) : null}
-                      {selectedResources.indexOf('network') > -1 ? (
+                      {selectedResources.indexOf("network") > -1 ? (
                         <tr>
                           <td>Network (Tx)</td>
                           <td>{networkTotalUsage.toFixed(2)} MB</td>
@@ -420,12 +454,18 @@ class Reports extends React.Component {
                           <td>{networkTotalPrice.toFixed(2)}€</td>
                         </tr>
                       ) : null}
-                      {selectedResources.indexOf('storage') > -1 ? (
+                      {selectedResources.indexOf("storage") > -1 ? (
                         <tr>
                           <td>Storage</td>
                           <td>{storageTotalUsage.toFixed(2)} MB</td>
                           <td>{storageStepPrice.toFixed(2)}€</td>
                           <td>{storageTotalPrice.toFixed(2)}€</td>
+                        </tr>
+                      ) : null}
+                      {fixedCosts > 0 ? (
+                        <tr>
+                          <td colSpan={3}>Fixed costs</td>
+                          <td>{fixedCosts.toFixed(2)} €</td>
                         </tr>
                       ) : null}
                     </tbody>
