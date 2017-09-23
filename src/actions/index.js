@@ -12,7 +12,7 @@ const GRAFANA_URL =
 export const fetchCpuUsage = (
   start,
   end,
-  step = '1h',
+  step = 3600,
   namespace = 'default'
 ) => dispatch => {
   dispatch({
@@ -41,7 +41,7 @@ export const fetchCpuUsage = (
     );
 };
 
-export const fetchCpuTotal = (start, end, step = '1h') => dispatch => {
+export const fetchCpuTotal = (start, end, step = 3600) => dispatch => {
   dispatch({
     type: 'FETCH_CPU_TOTAL_REQUEST'
   });
@@ -71,7 +71,7 @@ export const fetchCpuTotal = (start, end, step = '1h') => dispatch => {
 export const fetchMemoryUsage = (
   start,
   end,
-  step = '1h',
+  step = 3600,
   namespace = 'default'
 ) => dispatch => {
   dispatch({
@@ -100,7 +100,7 @@ export const fetchMemoryUsage = (
     );
 };
 
-export const fetchMemoryTotal = (start, end, step = '1h') => dispatch => {
+export const fetchMemoryTotal = (start, end, step = 3600) => dispatch => {
   dispatch({
     type: 'FETCH_MEMORY_TOTAL_REQUEST'
   });
@@ -130,7 +130,7 @@ export const fetchMemoryTotal = (start, end, step = '1h') => dispatch => {
 export const fetchNetworkUsage = (
   start,
   end,
-  step = '1h',
+  step = 3600,
   namespace = 'default'
 ) => dispatch => {
   dispatch({
@@ -138,7 +138,8 @@ export const fetchNetworkUsage = (
   });
 
   return fetch(
-    `${GRAFANA_URL}/api/v1/query_range?query=sum(container_network_transmit_bytes_total%7Bnamespace%3D%22${namespace}%22%7D%20OR%20on()%20vector(0))&start=${start}&end=${end}&step=${step}`
+    `${GRAFANA_URL}/api/v1/query_range?query=sum(container_network_transmit_bytes_total%7Bnamespace%3D%22${namespace}%22%7D%20OR%20on()%20vector(0))&start=${start -
+      step}&end=${end}&step=${step}`
   )
     .then(response => response.json())
     .then(data => data['data']['result'][0]['values'])
@@ -172,13 +173,14 @@ export const fetchNetworkUsage = (
     );
 };
 
-export const fetchNetworkTotal = (start, end, step = '1h') => dispatch => {
+export const fetchNetworkTotal = (start, end, step = 3600) => dispatch => {
   dispatch({
     type: 'FETCH_NETWORK_TOTAL_REQUEST'
   });
 
   return fetch(
-    `${GRAFANA_URL}/api/v1/query_range?query=sum(container_network_transmit_bytes_total%20OR%20on()%20vector(0))&start=${start}&end=${end}&step=${step}`
+    `${GRAFANA_URL}/api/v1/query_range?query=sum(container_network_transmit_bytes_total%20OR%20on()%20vector(0))&start=${start -
+      step}&end=${end}&step=${step}`
   )
     .then(response => response.json())
     .then(data => data['data']['result'][0]['values'])
@@ -215,7 +217,7 @@ export const fetchNetworkTotal = (start, end, step = '1h') => dispatch => {
 export const fetchDiskUsage = (
   start,
   end,
-  step = '1h',
+  step = 3600,
   namespace = 'default'
 ) => dispatch => {
   dispatch({
@@ -244,7 +246,7 @@ export const fetchDiskUsage = (
     );
 };
 
-export const fetchDiskTotal = (start, end, step = '1h') => dispatch => {
+export const fetchDiskTotal = (start, end, step = 3600) => dispatch => {
   dispatch({
     type: 'FETCH_DISK_TOTAL_REQUEST'
   });

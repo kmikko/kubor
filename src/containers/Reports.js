@@ -99,7 +99,7 @@ class Reports extends React.Component {
       this.state.timePeriod[1].setHours(23, 59, 59) / 1000
     );
 
-    const step = { hourly: '1h', daily: '1d' }[usage];
+    const step = { hourly: 3600, daily: 86400 }[usage];
 
     // TODO: step
     this.props.getCpuUsage(start, end, step, namespace);
