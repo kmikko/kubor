@@ -5,37 +5,37 @@ import * as api from "../api";
 import { getIsFetching } from "../reducers";
 */
 
-const GRAFANA_URL =
-  process.env.REACT_APP_GRAFANA_URL ||
-  "http://prometheus-prometheus-server.default.svc.cluster.local";
+const GRAFANA_URL = '/api/proxy';
+//process.env.REACT_APP_GRAFANA_URL ||
+//"http://prometheus-prometheus-server.default.svc.cluster.local";
 
 export const fetchCpuUsage = (
   start,
   end,
   step = 3600,
-  namespace = "default"
+  namespace = 'default'
 ) => dispatch => {
   dispatch({
-    type: "FETCH_CPU_USAGE_REQUEST"
+    type: 'FETCH_CPU_USAGE_REQUEST'
   });
 
   return fetch(
     `${GRAFANA_URL}/api/v1/query_range?query=sum%20(rate%20(container_cpu_usage_seconds_total%7Bnamespace%3D%22default%22%7D%5B1m%5D%20)%20OR%20on()%20vector(0))&start=${start}&end=${end}&step=${step}`
   )
     .then(response => response.json())
-    .then(data => data["data"]["result"][0]["values"])
+    .then(data => data['data']['result'][0]['values'])
     .then(data => data.map(x => [x[0], parseFloat(x[1])]))
     .then(
       data => {
         dispatch({
-          type: "FETCH_CPU_USAGE_SUCCESS",
+          type: 'FETCH_CPU_USAGE_SUCCESS',
           response: data
         });
       },
       error => {
         dispatch({
-          type: "FETCH_CPU_USAGE_FAILURE",
-          message: "Something went wrong"
+          type: 'FETCH_CPU_USAGE_FAILURE',
+          message: 'Something went wrong'
         });
       }
     );
@@ -43,26 +43,26 @@ export const fetchCpuUsage = (
 
 export const fetchCpuTotal = (start, end, step = 3600) => dispatch => {
   dispatch({
-    type: "FETCH_CPU_TOTAL_REQUEST"
+    type: 'FETCH_CPU_TOTAL_REQUEST'
   });
 
   return fetch(
     `${GRAFANA_URL}/api/v1/query_range?query=sum(machine_cpu_cores%20OR%20on()%20vector(0))%20&start=${start}&end=${end}&step=${step}`
   )
     .then(response => response.json())
-    .then(data => data["data"]["result"][0]["values"])
+    .then(data => data['data']['result'][0]['values'])
     .then(data => data.map(x => [x[0], parseFloat(x[1])]))
     .then(
       data => {
         dispatch({
-          type: "FETCH_CPU_TOTAL_SUCCESS",
+          type: 'FETCH_CPU_TOTAL_SUCCESS',
           response: data
         });
       },
       error => {
         dispatch({
-          type: "FETCH_CPU_TOTAL_FAILURE",
-          message: "Something went wrong"
+          type: 'FETCH_CPU_TOTAL_FAILURE',
+          message: 'Something went wrong'
         });
       }
     );
@@ -72,29 +72,29 @@ export const fetchMemoryUsage = (
   start,
   end,
   step = 3600,
-  namespace = "default"
+  namespace = 'default'
 ) => dispatch => {
   dispatch({
-    type: "FETCH_MEMORY_USAGE_REQUEST"
+    type: 'FETCH_MEMORY_USAGE_REQUEST'
   });
 
   return fetch(
     `${GRAFANA_URL}/api/v1/query_range?query=sum(container_memory_usage_bytes%7Bnamespace%3D%22${namespace}%22%7D%20OR%20on()%20vector(0))&start=${start}&end=${end}&step=${step}`
   )
     .then(response => response.json())
-    .then(data => data["data"]["result"][0]["values"])
+    .then(data => data['data']['result'][0]['values'])
     .then(data => data.map(x => [x[0], parseFloat(x[1])]))
     .then(
       data => {
         dispatch({
-          type: "FETCH_MEMORY_USAGE_SUCCESS",
+          type: 'FETCH_MEMORY_USAGE_SUCCESS',
           response: data
         });
       },
       error => {
         dispatch({
-          type: "FETCH_MEMORY_USAGE_FAILURE",
-          message: "Something went wrong"
+          type: 'FETCH_MEMORY_USAGE_FAILURE',
+          message: 'Something went wrong'
         });
       }
     );
@@ -102,26 +102,26 @@ export const fetchMemoryUsage = (
 
 export const fetchMemoryTotal = (start, end, step = 3600) => dispatch => {
   dispatch({
-    type: "FETCH_MEMORY_TOTAL_REQUEST"
+    type: 'FETCH_MEMORY_TOTAL_REQUEST'
   });
 
   return fetch(
     `${GRAFANA_URL}/api/v1/query_range?query=sum(machine_memory_bytes%20OR%20on()%20vector(0))&start=${start}&end=${end}&step=${step}`
   )
     .then(response => response.json())
-    .then(data => data["data"]["result"][0]["values"])
+    .then(data => data['data']['result'][0]['values'])
     .then(data => data.map(x => [x[0], parseFloat(x[1])]))
     .then(
       data => {
         dispatch({
-          type: "FETCH_MEMORY_TOTAL_SUCCESS",
+          type: 'FETCH_MEMORY_TOTAL_SUCCESS',
           response: data
         });
       },
       error => {
         dispatch({
-          type: "FETCH_MEMORY_TOTAL_FAILURE",
-          message: "Something went wrong"
+          type: 'FETCH_MEMORY_TOTAL_FAILURE',
+          message: 'Something went wrong'
         });
       }
     );
@@ -131,10 +131,10 @@ export const fetchNetworkUsage = (
   start,
   end,
   step = 3600,
-  namespace = "default"
+  namespace = 'default'
 ) => dispatch => {
   dispatch({
-    type: "FETCH_NETWORK_USAGE_REQUEST"
+    type: 'FETCH_NETWORK_USAGE_REQUEST'
   });
 
   return fetch(
@@ -142,7 +142,7 @@ export const fetchNetworkUsage = (
       step}&end=${end}&step=${step}`
   )
     .then(response => response.json())
-    .then(data => data["data"]["result"][0]["values"])
+    .then(data => data['data']['result'][0]['values'])
     .then(data => data.map(x => [x[0], parseFloat(x[1])]))
     .then(data =>
       data
@@ -160,14 +160,14 @@ export const fetchNetworkUsage = (
     .then(
       data => {
         dispatch({
-          type: "FETCH_NETWORK_USAGE_SUCCESS",
+          type: 'FETCH_NETWORK_USAGE_SUCCESS',
           response: data
         });
       },
       error => {
         dispatch({
-          type: "FETCH_NETWORK_USAGE_FAILURE",
-          message: "Something went wrong"
+          type: 'FETCH_NETWORK_USAGE_FAILURE',
+          message: 'Something went wrong'
         });
       }
     );
@@ -175,7 +175,7 @@ export const fetchNetworkUsage = (
 
 export const fetchNetworkTotal = (start, end, step = 3600) => dispatch => {
   dispatch({
-    type: "FETCH_NETWORK_TOTAL_REQUEST"
+    type: 'FETCH_NETWORK_TOTAL_REQUEST'
   });
 
   return fetch(
@@ -183,7 +183,7 @@ export const fetchNetworkTotal = (start, end, step = 3600) => dispatch => {
       step}&end=${end}&step=${step}`
   )
     .then(response => response.json())
-    .then(data => data["data"]["result"][0]["values"])
+    .then(data => data['data']['result'][0]['values'])
     .then(data => data.map(x => [x[0], parseFloat(x[1])]))
     .then(data =>
       data
@@ -201,14 +201,14 @@ export const fetchNetworkTotal = (start, end, step = 3600) => dispatch => {
     .then(
       data => {
         dispatch({
-          type: "FETCH_NETWORK_TOTAL_SUCCESS",
+          type: 'FETCH_NETWORK_TOTAL_SUCCESS',
           response: data
         });
       },
       error => {
         dispatch({
-          type: "FETCH_NETWORK_TOTAL_FAILURE",
-          message: "Something went wrong"
+          type: 'FETCH_NETWORK_TOTAL_FAILURE',
+          message: 'Something went wrong'
         });
       }
     );
@@ -218,29 +218,29 @@ export const fetchStorageUsage = (
   start,
   end,
   step = 3600,
-  namespace = "default"
+  namespace = 'default'
 ) => dispatch => {
   dispatch({
-    type: "FETCH_STORAGE_USAGE_REQUEST"
+    type: 'FETCH_STORAGE_USAGE_REQUEST'
   });
 
   return fetch(
     `${GRAFANA_URL}/api/v1/query_range?query=sum(container_fs_usage_bytes%7Bnamespace%3D%22${namespace}%22%7D)%20OR%20on()%20vector(0)&start=${start}&end=${end}&step=${step}`
   )
     .then(response => response.json())
-    .then(data => data["data"]["result"][0]["values"])
+    .then(data => data['data']['result'][0]['values'])
     .then(data => data.map(x => [x[0], parseFloat(x[1])]))
     .then(
       data => {
         dispatch({
-          type: "FETCH_STORAGE_USAGE_SUCCESS",
+          type: 'FETCH_STORAGE_USAGE_SUCCESS',
           response: data
         });
       },
       error => {
         dispatch({
-          type: "FETCH_STORAGE_USAGE_FAILURE",
-          message: "Something went wrong"
+          type: 'FETCH_STORAGE_USAGE_FAILURE',
+          message: 'Something went wrong'
         });
       }
     );
@@ -248,26 +248,26 @@ export const fetchStorageUsage = (
 
 export const fetchStorageTotal = (start, end, step = 3600) => dispatch => {
   dispatch({
-    type: "FETCH_STORAGE_TOTAL_REQUEST"
+    type: 'FETCH_STORAGE_TOTAL_REQUEST'
   });
 
   return fetch(
     `${GRAFANA_URL}/api/v1/query_range?query=sum(container_fs_usage_bytes)%20OR%20on()%20vector(0)&start=${start}&end=${end}&step=${step}`
   )
     .then(response => response.json())
-    .then(data => data["data"]["result"][0]["values"])
+    .then(data => data['data']['result'][0]['values'])
     .then(data => data.map(x => [x[0], parseFloat(x[1])]))
     .then(
       data => {
         dispatch({
-          type: "FETCH_STORAGE_TOTAL_SUCCESS",
+          type: 'FETCH_STORAGE_TOTAL_SUCCESS',
           response: data
         });
       },
       error => {
         dispatch({
-          type: "FETCH_STORAGE_TOTAL_FAILURE",
-          message: "Something went wrong"
+          type: 'FETCH_STORAGE_TOTAL_FAILURE',
+          message: 'Something went wrong'
         });
       }
     );
@@ -275,7 +275,7 @@ export const fetchStorageTotal = (start, end, step = 3600) => dispatch => {
 
 export const fetchKubernetesNamespaces = () => dispatch => {
   dispatch({
-    type: "FETCH_KUBERNETES_NAMESPACES_REQUEST"
+    type: 'FETCH_KUBERNETES_NAMESPACES_REQUEST'
   });
 
   return fetch(`${GRAFANA_URL}/api/v1/query?query=kube_pod_info`)
@@ -283,21 +283,21 @@ export const fetchKubernetesNamespaces = () => dispatch => {
     .then(data =>
       Array.from(
         new Set(
-          data["data"]["result"].map(result => result["metric"]["namespace"])
+          data['data']['result'].map(result => result['metric']['namespace'])
         )
       )
     )
     .then(
       data => {
         dispatch({
-          type: "FETCH_KUBERNETES_NAMESPACES_SUCCESS",
+          type: 'FETCH_KUBERNETES_NAMESPACES_SUCCESS',
           response: data
         });
       },
       error => {
         dispatch({
-          type: "FETCH_KUBERNETES_NAMESPACES_FAILURE",
-          message: "Something went wrong"
+          type: 'FETCH_KUBERNETES_NAMESPACES_FAILURE',
+          message: 'Something went wrong'
         });
       }
     );

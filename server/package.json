@@ -1,0 +1,11 @@
+{
+  "name": "kubor-server",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.15.4",
+    "http-proxy-middleware": "^0.17.4",
+    "path": "^0.12.7"
+  }
+}

@@ -3,3 +3,4 @@ node_modules
 Dockerfile
 .dockerignore
 README
+server/node_modules
