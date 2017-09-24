@@ -13,7 +13,8 @@ import {
   fetchNetworkUsage,
   fetchNetworkTotal,
   fetchStorageUsage,
-  fetchStorageTotal
+  fetchStorageTotal,
+  fetchClusterCosts
 } from '../actions';
 
 import CheckboxGroup from '../components/CheckboxGroup';
@@ -124,6 +125,8 @@ class Reports extends React.Component {
       this.props.getStorageUsage(start, end, step, namespace);
       this.props.getStorageTotal(start, end, step, namespace);
     }
+
+    this.props.getClusterCosts(start, end);
   }
 
   calculateNamespaceResourceUsage(usage, total) {
@@ -150,17 +153,22 @@ class Reports extends React.Component {
       networkUsage,
       networkTotal,
       storageUsage,
-      storageTotal
+      storageTotal,
+      clusterCosts
     } = this.props;
 
     const { resources: selectedResources, fixedCosts } = this.state;
 
     // TODO
     const daysInMonth = 29;
-    const clusterCpuPrice = 1000 / 2 / (daysInMonth * 24);
-    const clusterMemoryPrice = 1000 / 2 / (daysInMonth * 24);
-    const clusterNetworkPrice = 1000 / 2 / (daysInMonth * 24);
-    const clusterStoragePrice = 1000 / 2 / (daysInMonth * 24);
+    const clusterCpuPrice =
+      clusterCosts.find(x => x.type === 'cpu').cost / (daysInMonth * 24);
+    const clusterMemoryPrice =
+      clusterCosts.find(x => x.type === 'memory').cost / (daysInMonth * 24);
+    const clusterNetworkPrice =
+      clusterCosts.find(x => x.type === 'network').cost / (daysInMonth * 24);
+    const clusterStoragePrice =
+      clusterCosts.find(x => x.type === 'storage').cost / (daysInMonth * 24);
 
     const usageStep =
       differenceInCalendarDays(
@@ -496,7 +504,8 @@ const mapStateToProps = state => ({
   networkUsage: state.usage.network,
   networkTotal: state.total.network,
   storageUsage: state.usage.storage,
-  storageTotal: state.total.storage
+  storageTotal: state.total.storage,
+  clusterCosts: state.cluster.costs
 });
 
 export default connect(mapStateToProps, {
@@ -508,5 +517,6 @@ export default connect(mapStateToProps, {
   getNetworkUsage: fetchNetworkUsage,
   getNetworkTotal: fetchNetworkTotal,
   getStorageUsage: fetchStorageUsage,
-  getStorageTotal: fetchStorageTotal
+  getStorageTotal: fetchStorageTotal,
+  getClusterCosts: fetchClusterCosts
 })(Reports);

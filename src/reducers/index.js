@@ -6,6 +6,7 @@ import usage from './usage';
 import kubernetes from './kubernetes';
 import historical from './historical';
 import total from './total';
+import cluster from './cluster';
 
 export default combineReducers({
   router: routerReducer,
@@ -13,7 +14,8 @@ export default combineReducers({
   usage,
   kubernetes,
   historical,
-  total
+  total,
+  cluster
 });
 
 export const makeIncrement = () => dispatch => {
