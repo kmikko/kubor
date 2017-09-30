@@ -5,7 +5,9 @@
   "license": "MIT",
   "scripts": {
     "start":
-      "./node_modules/knex/bin/cli.js migrate:latest --env production && node index js"
+      "./node_modules/knex/bin/cli.js migrate:latest --env production && node index js",
+    "start:local":
+      "./node_modules/knex/bin/cli.js migrate:latest --env production && NODE_PORT=3000 GRAFANA_URL=http://localhost:9090 node index.js"
   },
   "dependencies": {
     "body-parser": "^1.18.2",

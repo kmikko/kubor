@@ -16,17 +16,17 @@ const GRAFANA_URL =
   process.env.GRAFANA_URL ||
   "http://prometheus-prometheus-server.default.svc.cluster.local";
 
-const NODE_PORT = process.env.NODE_PORT || 4000;
+const NODE_PORT = process.env.NODE_PORT || 3000;
 
 app.use(cors());
 app.use(express.static(path.join(__dirname, "/")));
 app.use(
-  "/api/proxy/grafana",
+  "/api/v1/proxy/grafana",
   proxy({
     target: GRAFANA_URL,
     changeOrigin: true,
     pathRewrite: {
-      "^/api/proxy/grafana": "/"
+      "^/api/v1/proxy/grafana": "/"
     }
   })
 );

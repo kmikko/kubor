@@ -5,18 +5,21 @@ import * as api from "../api";
 import { getIsFetching } from "../reducers";
 */
 
-const API_URL = process.env.REACT_APP_API_URL || '/api';
+const API_URL = process.env.REACT_APP_API_URL || '/api/v1';
 //process.env.REACT_APP_GRAFANA_URL ||
 //"http://prometheus-prometheus-server.default.svc.cluster.local";
 
-export const fetchClusterCosts = (start, end) => dispatch => {
+export const fetchClusterCosts = (
+  year = new Date().getFullYear(),
+  month = new Date().getMonth() + 1
+) => dispatch => {
   dispatch({
     type: 'FETCH_CLUSTER_COSTS_REQUEST'
   });
 
-  return fetch(`${API_URL}/cluster/costs?start=${start}&end=${end}`)
+  return fetch(`${API_URL}/cluster/costs?year=${year}&month=${month}`)
     .then(response => response.json())
-    .then(data => data['resources'])
+    .then(data => data)
     .then(
       data => {
         dispatch({

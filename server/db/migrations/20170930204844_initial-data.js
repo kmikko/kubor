@@ -5,7 +5,7 @@ exports.up = function(knex, Promise) {
       .insert([
         { type_name: "cpu", type_id: 1 },
         { type_name: "memory", type_id: 2 },
-        { type_name: "disk", type_id: 3 },
+        { type_name: "storage", type_id: 3 },
         { type_name: "network", type_id: 4 },
         { type_name: "custom", type_id: 5 }
       ]),

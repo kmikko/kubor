@@ -93,16 +93,9 @@ class Reports extends React.Component {
   }
 
   handleCalculateClick() {
-    const values = {
-      namespace: this.state.namespace,
-      resources: this.state.resources,
-      timePeriod: this.state.timePeriod,
-      usage: this.state.usage
-    };
+    const { namespace, usage, resources, timePeriod } = this.state;
 
-    const { namespace, usage, resources } = this.state;
-
-    const start = Math.round(this.state.timePeriod[0] / 1000);
+    const start = Math.round(timePeriod[0] / 1000);
     const end = Math.round(
       this.state.timePeriod[1].setHours(23, 59, 59) / 1000
     );
@@ -126,7 +119,10 @@ class Reports extends React.Component {
       this.props.getStorageTotal(start, end, step, namespace);
     }
 
-    this.props.getClusterCosts(start, end);
+    this.props.getClusterCosts(
+      timePeriod[0].getFullYear(),
+      timePeriod[0].getMonth() + 1
+    );
   }
 
   calculateNamespaceResourceUsage(usage, total) {
@@ -159,7 +155,7 @@ class Reports extends React.Component {
 
     const { resources: selectedResources, fixedCosts } = this.state;
 
-    // TODO
+    // TODO: This explodes if not all resources found
     const daysInMonth = 29;
     const clusterCpuPrice =
       clusterCosts.find(x => x.type === 'cpu').cost / (daysInMonth * 24);
