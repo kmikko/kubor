@@ -8,17 +8,9 @@ const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
-const knex = require("knex")({
-  client: "sqlite3",
-  connection: {
-    filename: "./kubor.sqlite"
-  },
-  pool: {
-    afterCreate: (conn, cb) => {
-      conn.run("PRAGMA foreign_keys = ON", cb);
-    }
-  }
-});
+const NODE_ENV = process.env.NODE_ENV || "production";
+const knexConfig = require("./knexfile.js")[NODE_ENV];
+const knex = require("knex")(knexConfig);
 
 const GRAFANA_URL =
   process.env.GRAFANA_URL ||
