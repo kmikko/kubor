@@ -47,7 +47,7 @@ export const fetchCpuUsage = (
   });
 
   return fetch(
-    `${API_URL}/proxy/grafana/api/v1/query_range?query=sum%20(rate%20(container_cpu_usage_seconds_total%7Bnamespace%3D%22default%22%7D%5B1m%5D%20)%20OR%20on()%20vector(0))&start=${start}&end=${end}&step=${step}`
+    `${API_URL}/proxy/grafana/api/v1/query_range?query=sum%20(rate%20(container_cpu_usage_seconds_total%7Bnamespace%3D%22${namespace}%22%7D%5B1m%5D%20)%20OR%20on()%20vector(0))&start=${start}&end=${end}&step=${step}`
   )
     .then(response => response.json())
     .then(data => data['data']['result'][0]['values'])
@@ -56,7 +56,8 @@ export const fetchCpuUsage = (
       data => {
         dispatch({
           type: 'FETCH_CPU_USAGE_SUCCESS',
-          response: data
+          namespace: namespace,
+          values: data
         });
       },
       error => {
@@ -115,7 +116,8 @@ export const fetchMemoryUsage = (
       data => {
         dispatch({
           type: 'FETCH_MEMORY_USAGE_SUCCESS',
-          response: data
+          namespace: namespace,
+          values: data
         });
       },
       error => {
@@ -188,7 +190,8 @@ export const fetchNetworkUsage = (
       data => {
         dispatch({
           type: 'FETCH_NETWORK_USAGE_SUCCESS',
-          response: data
+          namespace: namespace,
+          values: data
         });
       },
       error => {
@@ -261,7 +264,8 @@ export const fetchStorageUsage = (
       data => {
         dispatch({
           type: 'FETCH_STORAGE_USAGE_SUCCESS',
-          response: data
+          namespace: namespace,
+          values: data
         });
       },
       error => {

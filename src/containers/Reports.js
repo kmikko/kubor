@@ -1,11 +1,17 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import Flatpickr from 'react-flatpickr';
-import 'flatpickr/dist/themes/material_green.css';
 import differenceInCalendarDays from 'date-fns/difference_in_calendar_days';
+import {
+  calculateResourceUsagePrice,
+  calculateResourceUsageHours,
+  calculateNamespaceUsage
+} from '../utils/clusterUtils';
+
+import Hero from '../components/Hero';
+import CostFilter from '../components/CostFilter';
+import CostSummary from '../components/CostSummary';
 
 import {
-  fetchKubernetesNamespaces,
   fetchCpuUsage,
   fetchCpuTotal,
   fetchMemoryUsage,
@@ -14,7 +20,8 @@ import {
   fetchNetworkTotal,
   fetchStorageUsage,
   fetchStorageTotal,
-  fetchClusterCosts
+  fetchClusterCosts,
+  fetchKubernetesNamespaces
 } from '../actions';
 
 import CheckboxGroup from '../components/CheckboxGroup';
@@ -24,37 +31,33 @@ class Reports extends React.Component {
     super(props);
 
     this.state = {
-      namespace: '',
       resources: ['cpu', 'memory', 'storage', 'network'],
       timePeriod: [new Date(2017, 8, 1), new Date(2017, 8, 30)],
       usage: 'hourly',
       fixedCosts: ''
     };
 
-    this.handleNamespaceChange = this.handleNamespaceChange.bind(this);
     this.handleResourceChange = this.handleResourceChange.bind(this);
-    this.handleTimePeriodChange = this.handleTimePeriodChange.bind(this);
     this.handleUsageChange = this.handleUsageChange.bind(this);
     this.handleCalculateClick = this.handleCalculateClick.bind(this);
-    this.handleFixedCostsChange = this.handleFixedCostsChange.bind(this);
+    this.handleTimeChange = this.handleTimeChange.bind(this);
   }
 
   componentDidMount() {
+    const { timePeriod } = this.state;
+    this.props.getClusterCosts(
+      timePeriod[0].getFullYear(),
+      timePeriod[0].getMonth() + 1
+    );
+
     this.props.getKubernetesNamespaces();
+    //this.handleCalculateClick("kube-system");
   }
 
-  componentWillReceiveProps(nextProps) {
-    if (this.state.namespace === '' && nextProps.namespaces.length > 0) {
-      this.setState({
-        namespace: nextProps.namespaces[0]
-      });
+  componentWillReceiveProps(props) {
+    if (this.props.namespaces.length !== props.namespaces.length) {
+      props.namespaces.forEach(n => this.handleCalculateClick(n));
     }
-  }
-
-  handleNamespaceChange(event) {
-    this.setState({
-      namespace: event.target.value
-    });
   }
 
   handleResourceChange(event) {
@@ -72,29 +75,16 @@ class Reports extends React.Component {
     }));
   }
 
-  handleTimePeriodChange(values) {
-    if (values.length === 2) {
-      this.setState({
-        timePeriod: values
-      });
-    }
-  }
-
   handleUsageChange(event) {
     this.setState({
       usage: event.target.value
     });
   }
 
-  handleFixedCostsChange(event) {
-    this.setState({
-      fixedCosts: parseInt(event.target.value, 10)
-    });
-  }
+  handleCalculateClick(namespace) {
+    const { usage, resources, timePeriod } = this.state;
 
-  handleCalculateClick() {
-    const { namespace, usage, resources, timePeriod } = this.state;
-
+    // TODO
     const start = Math.round(timePeriod[0] / 1000);
     const end = Math.round(
       this.state.timePeriod[1].setHours(23, 59, 59) / 1000
@@ -102,22 +92,22 @@ class Reports extends React.Component {
 
     const step = { hourly: 3600, daily: 86400 }[usage];
 
-    if (resources.indexOf('cpu') > -1) {
-      this.props.getCpuUsage(start, end, step, namespace);
-      this.props.getCpuTotal(start, end, step, namespace);
-    }
-    if (resources.indexOf('memory') > -1) {
-      this.props.getMemoryUsage(start, end, step, namespace);
-      this.props.getMemoryTotal(start, end, step, namespace);
-    }
-    if (resources.indexOf('network') > -1) {
-      this.props.getNetworkUsage(start, end, step, namespace);
-      this.props.getNetworkTotal(start, end, step, namespace);
-    }
-    if (resources.indexOf('storage') > -1) {
-      this.props.getStorageUsage(start, end, step, namespace);
-      this.props.getStorageTotal(start, end, step, namespace);
-    }
+    //if (resources.indexOf("cpu") > -1) {
+    this.props.getCpuUsage(start, end, step, namespace);
+    this.props.getCpuTotal(start, end, step, namespace);
+    //}
+    //if (resources.indexOf("memory") > -1) {
+    this.props.getMemoryUsage(start, end, step, namespace);
+    this.props.getMemoryTotal(start, end, step, namespace);
+    //}
+    //if (resources.indexOf("network") > -1) {
+    this.props.getNetworkUsage(start, end, step, namespace);
+    this.props.getNetworkTotal(start, end, step, namespace);
+    //}
+    //if (resources.indexOf("storage") > -1) {
+    this.props.getStorageUsage(start, end, step, namespace);
+    this.props.getStorageTotal(start, end, step, namespace);
+    //}
 
     this.props.getClusterCosts(
       timePeriod[0].getFullYear(),
@@ -125,23 +115,42 @@ class Reports extends React.Component {
     );
   }
 
-  calculateNamespaceResourceUsage(usage, total) {
-    if (usage.length !== total.length) {
-      return [];
-    }
+  getResourceUsage(startDate, endDate, namespace, step = 3600) {
+    this.props.getCpuUsage(startDate, endDate, step, namespace);
+    this.props.getCpuTotal(startDate, endDate, step, namespace);
+    this.props.getMemoryUsage(startDate, endDate, step, namespace);
+    this.props.getMemoryTotal(startDate, endDate, step, namespace);
+    this.props.getNetworkUsage(startDate, endDate, step, namespace);
+    this.props.getNetworkTotal(startDate, endDate, step, namespace);
+    this.props.getStorageUsage(startDate, endDate, step, namespace);
+    this.props.getStorageTotal(startDate, endDate, step, namespace);
+    this.props.getClusterCosts(
+      startDate.getFullYear(),
+      startDate.getMonth() + 1
+    );
+  }
 
-    let percentage = [];
+  handleTimeChange(e) {
+    const { value } = e.target;
+    console.log('value', value);
+    let startDate = new Date(value + 'T00:00:00.000Z');
+    let endDate = new Date(
+      Date.UTC(startDate.getFullYear(), startDate.getMonth() + 1, 0, 23, 59, 59)
+    );
 
-    for (let i = 0; i < usage.length - 1; i++) {
-      percentage.push([usage[i][0], usage[i][1] / total[i][1] || 0]);
-    }
-    return percentage;
+    startDate = Math.round(startDate / 1000);
+    endDate = Math.round(endDate / 1000);
+    console.log(`startDate: ${startDate}, endDate: ${endDate}`);
+
+    /*
+    this.props.namespaces.forEach(n =>
+      this.getResourceUsage(startDate, endDate, n)
+    );
+    */
   }
 
   render() {
-    console.log('props', this.props);
-    const {
-      namespaces,
+    let {
       cpuUsage,
       cpuTotal,
       memoryUsage,
@@ -150,339 +159,54 @@ class Reports extends React.Component {
       networkTotal,
       storageUsage,
       storageTotal,
-      clusterCosts
+      clusterCosts,
+      namespaces
     } = this.props;
 
-    const { resources: selectedResources, fixedCosts } = this.state;
-
-    // TODO: This explodes if not all resources found
-    const daysInMonth = 29;
-    const clusterCpuPrice =
-      clusterCosts.find(x => x.type === 'cpu').cost / (daysInMonth * 24);
-    const clusterMemoryPrice =
-      clusterCosts.find(x => x.type === 'memory').cost / (daysInMonth * 24);
-    const clusterNetworkPrice =
-      clusterCosts.find(x => x.type === 'network').cost / (daysInMonth * 24);
-    const clusterStoragePrice =
-      clusterCosts.find(x => x.type === 'storage').cost / (daysInMonth * 24);
-
-    const usageStep =
-      differenceInCalendarDays(
-        this.state.timePeriod[1],
-        this.state.timePeriod[0]
-      ) +
-      1 * (this.state.usage === 'hourly' ? 24 : 1);
-
-    // CPU
-    const cpuTotalPrice = this.calculateNamespaceResourceUsage(
-      cpuUsage,
-      cpuTotal
-    )
-      .map(x => x[1] * clusterCpuPrice)
-      .reduce((prev, curr) => prev + curr, 0);
-    console.log('cpuPrice', cpuTotalPrice);
-    const cpuUsageUnits = cpuUsage.filter(x => x[1] !== 0).length;
-    const cpuStepPrice = cpuTotalPrice / cpuUsageUnits || 0;
-
-    // Memory
-    const memoryTotalPrice = this.calculateNamespaceResourceUsage(
-      memoryUsage,
-      memoryTotal
-    )
-      .map(x => x[1] * clusterMemoryPrice)
-      .reduce((prev, curr) => prev + curr, 0);
-    const memoryUsageUnits = memoryUsage.filter(x => x[1] !== 0).length;
-    const memoryStepPrice = memoryTotalPrice / memoryUsageUnits || 0;
-    console.log('memoryPrice', memoryTotalPrice);
-
-    // Network
-    const networkTotalPrice = this.calculateNamespaceResourceUsage(
-      networkUsage,
-      networkTotal
-    )
-      .map(x => x[1] * clusterNetworkPrice)
-      .reduce((prev, curr) => prev + curr, 0);
-    console.log('networkPrice', networkTotalPrice);
-    // TODO: Converter from bytes to reasonable unit (kilo/mega/giga)
-    const networkUsageUnits = networkUsage.filter(x => x[1] !== 0).length;
-    const networkTotalUsage =
-      networkUsage.reduce((prev, curr) => prev + curr[1], 0) / 1000 / 1000;
-    console.log('networkTotalUsage', networkTotalUsage);
-    const networkStepPrice = networkTotalPrice / networkUsageUnits || 0;
-
-    // Storage
-    const storageTotalPrice = this.calculateNamespaceResourceUsage(
-      storageUsage,
-      storageTotal
-    )
-      .map(x => x[1] * clusterStoragePrice)
-      .reduce((prev, curr) => prev + curr, 0);
-    console.log('storagePrice', storageTotalPrice);
-    const storageUsageUnits = storageUsage.filter(x => x[1] !== 0).length;
-    const storageTotalUsage =
-      storageUsage.reduce((prev, curr) => (curr[1] === 0 ? prev : curr[1]), 0) /
-      1000 /
-      1000;
-    console.log('storageTotalUsage', storageTotalUsage);
-    const storageStepPrice = storageTotalPrice / storageUsageUnits || 0;
-
-    const stepPrice =
-      memoryStepPrice + cpuStepPrice + networkStepPrice + storageStepPrice;
-    const totalPrice =
-      (selectedResources.indexOf('memory') > -1 ? memoryTotalPrice : 0) +
-      (selectedResources.indexOf('cpu') > -1 ? cpuTotalPrice : 0) +
-      (selectedResources.indexOf('network') > -1 ? networkTotalPrice : 0) +
-      (selectedResources.indexOf('storage') > -1 ? storageTotalPrice : 0) +
-      (fixedCosts !== '' ? fixedCosts : 0);
+    // clusterCosts: Cluster total costs by resource
+    // total usage by resource
+    // namespace resource usage
+    const costs = namespaces.map(namespace => ({
+      namespace: namespace,
+      costs: calculateNamespaceUsage(
+        clusterCosts,
+        {
+          cpu: cpuUsage[namespace] || [],
+          memory: memoryUsage[namespace] || [],
+          storage: storageUsage[namespace] || [],
+          network: networkUsage[namespace] || []
+        },
+        {
+          cpu: cpuTotal,
+          memory: memoryTotal,
+          storage: storageTotal,
+          network: networkTotal
+        }
+      )
+    }));
 
     return (
       <div>
-        <div className="columns">
-          <div className="column">
-            <div className="card">
-              <header className="card-header">
-                <p className="card-header-title">Reports</p>
-              </header>
-              <div className="card-content">
-                <div className="content">
-                  <div className="field is-horizontal">
-                    <div className="field-label">
-                      <label className="label">Namespace</label>
-                    </div>
-                    <div className="field-body">
-                      <div className="field">
-                        <div className="control">
-                          <div className="select">
-                            <select
-                              value={this.state.namespace}
-                              onChange={this.handleNamespaceChange}
-                            >
-                              {namespaces.map(n => (
-                                <option key={n}>{n}</option>
-                              ))}
-                            </select>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+        <Hero
+          title="Costs explorer"
+          subtitle="Explor costs of your K8s cluster."
+        />
 
-                  <div className="field is-horizontal">
-                    <div className="field-label">
-                      <label className="label">Resources</label>
-                    </div>
-                    <div className="field-body">
-                      <div className="field">
-                        <input
-                          className="is-checkbox"
-                          id="cpuCheckbox"
-                          type="checkbox"
-                          name="resource"
-                          value="cpu"
-                          onChange={this.handleResourceChange}
-                          checked={this.state.resources.indexOf('cpu') > -1}
-                        />
-                        <label htmlFor="cpuCheckbox">CPU</label>
-                        <input
-                          className="is-checkbox"
-                          id="memoryCheckbox"
-                          type="checkbox"
-                          name="resource"
-                          value="memory"
-                          onChange={this.handleResourceChange}
-                          checked={this.state.resources.indexOf('memory') > -1}
-                        />
-                        <label htmlFor="memoryCheckbox">Memory</label>
-                        <input
-                          className="is-checkbox"
-                          id="networkCheckbox"
-                          type="checkbox"
-                          name="resource"
-                          value="network"
-                          onChange={this.handleResourceChange}
-                          checked={this.state.resources.indexOf('network') > -1}
-                        />
-                        <label htmlFor="networkCheckbox">Network</label>
-                        <input
-                          className="is-checkbox"
-                          id="storageCheckbox"
-                          type="checkbox"
-                          name="resource"
-                          value="storage"
-                          onChange={this.handleResourceChange}
-                          checked={this.state.resources.indexOf('storage') > -1}
-                        />
-                        <label htmlFor="storageCheckbox">Storage</label>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="field is-horizontal">
-                    <div className="field-label is-normal">
-                      <label className="label">Fixed costs</label>
-                    </div>
-                    <div className="field-body">
-                      <div className="field has-addons">
-                        <p className="control">
-                          <input
-                            className="input"
-                            type="number"
-                            min="0"
-                            step="1"
-                            placeholder="Monthly fixed costs"
-                            value={this.state.fixedCosts}
-                            onChange={this.handleFixedCostsChange}
-                          />
-                        </p>
-                        <p className="control">
-                          <a className="button is-static">€</a>
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="field is-horizontal">
-                    <div className="field-label is-normal">
-                      <label className="label">Time period</label>
-                    </div>
-                    <div className="field-body">
-                      <div className="field">
-                        <Flatpickr
-                          options={{
-                            inline: true,
-                            mode: 'range',
-                            defaultDate: this.state.timePeriod
-                          }}
-                          onChange={this.handleTimePeriodChange}
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="field is-horizontal">
-                    <div className="field-label">
-                      <label className="label">Usage</label>
-                    </div>
-                    <div className="field-body">
-                      <div className="field">
-                        <input
-                          className="is-radio"
-                          id="hourlyRadio"
-                          type="radio"
-                          name="usage"
-                          onChange={this.handleUsageChange}
-                          checked={this.state.usage === 'hourly'}
-                          value="hourly"
-                        />
-                        <label htmlFor="hourlyRadio">Hourly</label>
-                        <input
-                          className="is-radio"
-                          id="dailyRadio"
-                          type="radio"
-                          name="usage"
-                          onChange={this.handleUsageChange}
-                          checked={this.state.usage === 'daily'}
-                          value="daily"
-                          disabled
-                        />
-                        <label htmlFor="dailyRadio">Daily</label>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="field is-horizontal">
-                    <div className="field-label" />
-                    <div className="field-body">
-                      <div className="field">
-                        <div className="control">
-                          <button
-                            className="button is-primary"
-                            onClick={this.handleCalculateClick}
-                          >
-                            Calculate
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+        <div className="columns is-marginless is-maincontent">
+          <div className="column is-4">
+            <CostFilter
+              costs={clusterCosts}
+              onTimeChange={this.handleTimeChange}
+            />
           </div>
-        </div>
-        <div className="columns">
-          <div className="column">
-            <div className="card">
-              <header className="card-header">
-                <p className="card-header-title">Cost summary</p>
-              </header>
-              <div className="card-content">
-                <div className="content">
-                  <table className="table is-striped">
-                    <thead>
-                      <tr>
-                        <th>Resource</th>
-                        <th>Usage</th>
-                        <th>Per hour</th>
-                        <th>Total</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {selectedResources.indexOf('cpu') > -1 ? (
-                        <tr>
-                          <td>CPU</td>
-                          <td>
-                            {cpuUsageUnits}&nbsp;
-                            {this.state.usage === 'hourly' ? 'hours' : 'days'}
-                          </td>
-                          <td>{cpuStepPrice.toFixed(2)}€</td>
-                          <td>{cpuTotalPrice.toFixed(2)}€</td>
-                        </tr>
-                      ) : null}
-                      {selectedResources.indexOf('memory') > -1 ? (
-                        <tr>
-                          <td>Memory</td>
-                          <td>
-                            {memoryUsageUnits}&nbsp;
-                            {this.state.usage === 'hourly' ? 'hours' : 'days'}
-                          </td>
-                          <td>{memoryStepPrice.toFixed(2)}€</td>
-                          <td>{memoryTotalPrice.toFixed(2)}€</td>
-                        </tr>
-                      ) : null}
-                      {selectedResources.indexOf('network') > -1 ? (
-                        <tr>
-                          <td>Network (Tx)</td>
-                          <td>{networkTotalUsage.toFixed(2)} MB</td>
-                          <td>{networkStepPrice.toFixed(2)}€</td>
-                          <td>{networkTotalPrice.toFixed(2)}€</td>
-                        </tr>
-                      ) : null}
-                      {selectedResources.indexOf('storage') > -1 ? (
-                        <tr>
-                          <td>Storage</td>
-                          <td>{storageTotalUsage.toFixed(2)} MB</td>
-                          <td>{storageStepPrice.toFixed(2)}€</td>
-                          <td>{storageTotalPrice.toFixed(2)}€</td>
-                        </tr>
-                      ) : null}
-                      {fixedCosts > 0 ? (
-                        <tr>
-                          <td colSpan={3}>Fixed costs</td>
-                          <td>{fixedCosts.toFixed(2)} €</td>
-                        </tr>
-                      ) : null}
-                    </tbody>
-                    <tfoot>
-                      <tr>
-                        <th colSpan={2}>TOTAL</th>
-                        <th>{stepPrice.toFixed(2)}€</th>
-                        <th>{totalPrice.toFixed(2)}€</th>
-                      </tr>
-                    </tfoot>
-                  </table>
+
+          <div className="column is-8">
+            <div className="columns is-multiline">
+              {costs.map(c => (
+                <div className="column is-6">
+                  <CostSummary namespace={c.namespace} costs={c.costs} />
                 </div>
-              </div>
+              ))}
             </div>
           </div>
         </div>
@@ -492,7 +216,6 @@ class Reports extends React.Component {
 }
 
 const mapStateToProps = state => ({
-  namespaces: state.kubernetes.namespaces,
   cpuUsage: state.usage.cpu,
   cpuTotal: state.total.cpu,
   memoryUsage: state.usage.memory,
@@ -501,11 +224,11 @@ const mapStateToProps = state => ({
   networkTotal: state.total.network,
   storageUsage: state.usage.storage,
   storageTotal: state.total.storage,
-  clusterCosts: state.cluster.costs
+  clusterCosts: state.cluster.costs,
+  namespaces: state.kubernetes.namespaces
 });
 
 export default connect(mapStateToProps, {
-  getKubernetesNamespaces: fetchKubernetesNamespaces,
   getCpuUsage: fetchCpuUsage,
   getCpuTotal: fetchCpuTotal,
   getMemoryUsage: fetchMemoryUsage,
@@ -514,5 +237,6 @@ export default connect(mapStateToProps, {
   getNetworkTotal: fetchNetworkTotal,
   getStorageUsage: fetchStorageUsage,
   getStorageTotal: fetchStorageTotal,
-  getClusterCosts: fetchClusterCosts
+  getClusterCosts: fetchClusterCosts,
+  getKubernetesNamespaces: fetchKubernetesNamespaces
 })(Reports);
