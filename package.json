@@ -19,7 +19,7 @@
     "react-redux": "^5.0.5",
     "react-router-dom": "^4.1.1",
     "react-router-redux": "next",
-    "react-scripts": "^1.0.13",
+    "react-scripts": "1.0.14",
     "redux": "^3.7.1",
     "redux-devtools": "^3.4.0",
     "redux-logger": "^3.0.6",
@@ -27,14 +27,16 @@
     "victory": "^0.21.2"
   },
   "lint-staged": {
-    "src/**/*.{js,jsx,json,css}": ["prettier --single-quote --write", "git add"]
+    "src/**/*.{js,jsx,json,css}": [
+      "prettier --single-quote --write",
+      "git add"
+    ]
   },
   "scripts": {
     "precommit": "lint-staged",
     "flow": "flow",
     "start": "PORT=4000 react-scripts start",
-    "start:local":
-      "PORT=4000 REACT_APP_API_URL=http://localhost:3000/api/v1 react-scripts start",
+    "start:local": "PORT=4000 REACT_APP_API_URL=http://localhost:3000/api/v1 react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject"
