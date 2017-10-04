@@ -1,30 +1,33 @@
-import React from 'react';
-import { Route, Switch } from 'react-router-dom';
+import React from "react";
+import { Route, Switch } from "react-router-dom";
+import { connect } from "react-redux";
 
 //import "bulma/css/bulma.css";
-import '../styles/bulma.css';
-import '../../node_modules/font-awesome/css/font-awesome.min.css';
-import './App.css';
+import "../styles/bulma.css";
+import "../../node_modules/font-awesome/css/font-awesome.min.css";
+import "./App.css";
 //import "font-awesome/css/font-awesome.min.css";
 
-import TopBar from './TopBar';
-import NavBar from './NavBar';
-import SideBar from './SideBar';
-import MainContent from './MainContent';
+import TopBar from "./TopBar";
+import NavBar from "./NavBar";
+import SideBar from "./SideBar";
+import MainContent from "./MainContent";
+import Errors from "../components/Errors";
 
-import Dashboard from './Dashboard';
-import About from './About';
-import Topics from './Topics';
-import NoMatch from './NoMatch';
-import Home from './Home';
+import Dashboard from "./Dashboard";
+import About from "./About";
+import Topics from "./Topics";
+import NoMatch from "./NoMatch";
+import Home from "./Home";
 
-import Overview from './Overview';
-import Reports from './Reports';
-import Forecasts from './Forecasts';
+import Overview from "./Overview";
+import Reports from "./Reports";
+import Forecasts from "./Forecasts";
 
-const App = () => (
+const App = props => (
   <div>
     <NavBar />
+    <Errors errors={props.errors} />
 
     <Switch>
       <Route exact path="/" component={Overview} />
