@@ -1,12 +1,12 @@
-import { combineReducers } from 'redux';
-import { routerReducer } from 'react-router-redux';
+import { combineReducers } from "redux";
+import { routerReducer } from "react-router-redux";
 
-import counter from './counter';
-import usage from './usage';
-import kubernetes from './kubernetes';
-import historical from './historical';
-import total from './total';
-import cluster from './cluster';
+import counter from "./counter";
+import usage from "./usage";
+import kubernetes from "./kubernetes";
+import historical from "./historical";
+import total from "./total";
+import cluster from "./cluster";
 
 export default combineReducers({
   router: routerReducer,
@@ -20,15 +20,76 @@ export default combineReducers({
 
 export const makeIncrement = () => dispatch => {
   dispatch({
-    type: 'counter/INCREMENT_REQUESTED'
+    type: "counter/INCREMENT_REQUESTED"
   });
 
   setTimeout(() => {
     dispatch({
-      type: 'counter/INCREMENT'
+      type: "counter/INCREMENT"
     });
   }, 3000);
 };
+
+export const getCpuUsage = (state, namespace) => {
+  return state.usage.cpu[namespace] || [];
+};
+
+export const getMemoryUsage = (state, namespace) => {
+  return state.usage.memory[namespace] || [];
+};
+
+export const getStorageUsage = (state, namespace) => {
+  return state.usage.storage[namespace] || [];
+};
+
+export const getNetworkUsage = (state, namespace) => {
+  return state.usage.network[namespace] || [];
+};
+
+export const getCpuTotalUsage = state => {
+  return state.total.cpu;
+};
+
+export const getMemoryTotalUsage = state => {
+  return state.total.memory;
+};
+
+export const getStorageTotalUsage = state => {
+  return state.total.storage;
+};
+
+export const getNetworkTotalUsage = state => {
+  return state.total.network;
+};
+
+export const getClusterCosts = state => {
+  return state.cluster.costs;
+};
+
+export const getClusterNamespaces = state => {
+  return state.kubernetes.namespaces;
+};
+
+export const getResourceUsageByNamespace = state => {
+  const namespaces = getClusterNamespaces(state);
+  return namespaces.map(n => ({
+    namespace: n,
+    usage: {
+      cpu: state.usage.cpu[n] || [],
+      memory: state.usage.memory[n] || [],
+      storage: state.usage.storage[n] || [],
+      network: state.usage.network[n] || []
+    },
+    total: getClusterResourceUsage(state)
+  }));
+};
+
+const getClusterResourceUsage = state => ({
+  cpu: state.total.cpu,
+  memory: state.total.memory,
+  storage: state.total.storage,
+  network: state.total.network
+});
 
 /*
 import byId, * as fromById from "./byId";

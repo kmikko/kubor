@@ -1,15 +1,29 @@
-import React from 'react';
-import { connect } from 'react-redux';
-import differenceInCalendarDays from 'date-fns/difference_in_calendar_days';
+import React from "react";
+import { connect } from "react-redux";
+import differenceInCalendarDays from "date-fns/difference_in_calendar_days";
 import {
   calculateResourceUsagePrice,
   calculateResourceUsageHours,
   calculateNamespaceUsage
-} from '../utils/clusterUtils';
+} from "../utils/clusterUtils";
 
-import Hero from '../components/Hero';
-import CostFilter from '../components/CostFilter';
-import CostSummary from '../components/CostSummary';
+import {
+  getCpuUsage,
+  getMemoryUsage,
+  getStorageUsage,
+  getNetworkUsage,
+  getCpuTotalUsage,
+  getMemoryTotalUsage,
+  getStorageTotalUsage,
+  getNetworkTotalUsage,
+  getClusterCosts,
+  getClusterNamespaces,
+  getResourceUsageByNamespace
+} from "../reducers";
+
+import Hero from "../components/Hero";
+import CostFilter from "../components/CostFilter";
+import CostSummary from "../components/CostSummary";
 
 import {
   fetchCpuUsage,
@@ -22,19 +36,19 @@ import {
   fetchStorageTotal,
   fetchClusterCosts,
   fetchKubernetesNamespaces
-} from '../actions';
+} from "../actions";
 
-import CheckboxGroup from '../components/CheckboxGroup';
+import CheckboxGroup from "../components/CheckboxGroup";
 
 class Reports extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      resources: ['cpu', 'memory', 'storage', 'network'],
+      resources: ["cpu", "memory", "storage", "network"],
       timePeriod: [new Date(2017, 8, 1), new Date(2017, 8, 30)],
-      usage: 'hourly',
-      fixedCosts: ''
+      usage: "hourly",
+      fixedCosts: ""
     };
 
     this.handleResourceChange = this.handleResourceChange.bind(this);
@@ -132,8 +146,8 @@ class Reports extends React.Component {
 
   handleTimeChange(e) {
     const { value } = e.target;
-    console.log('value', value);
-    let startDate = new Date(value + 'T00:00:00.000Z');
+    console.log("value", value);
+    let startDate = new Date(value + "T00:00:00.000Z");
     let endDate = new Date(
       Date.UTC(startDate.getFullYear(), startDate.getMonth() + 1, 0, 23, 59, 59)
     );
@@ -160,27 +174,29 @@ class Reports extends React.Component {
       storageUsage,
       storageTotal,
       clusterCosts,
-      namespaces
+      namespaces,
+      usageByNamespace
     } = this.props;
 
     // clusterCosts: Cluster total costs by resource
     // total usage by resource
     // namespace resource usage
-    const costs = namespaces.map(namespace => ({
-      namespace: namespace,
+
+    const costs = usageByNamespace.map(x => ({
+      namespace: x.namespace,
       costs: calculateNamespaceUsage(
         clusterCosts,
         {
-          cpu: cpuUsage[namespace] || [],
-          memory: memoryUsage[namespace] || [],
-          storage: storageUsage[namespace] || [],
-          network: networkUsage[namespace] || []
+          cpu: x.usage.cpu,
+          memory: x.usage.memory,
+          storage: x.usage.storage,
+          network: x.usage.network
         },
         {
-          cpu: cpuTotal,
-          memory: memoryTotal,
-          storage: storageTotal,
-          network: networkTotal
+          cpu: x.total.cpu,
+          memory: x.total.memory,
+          storage: x.total.storage,
+          network: x.total.network
         }
       )
     }));
@@ -216,16 +232,17 @@ class Reports extends React.Component {
 }
 
 const mapStateToProps = state => ({
-  cpuUsage: state.usage.cpu,
-  cpuTotal: state.total.cpu,
-  memoryUsage: state.usage.memory,
-  memoryTotal: state.total.memory,
-  networkUsage: state.usage.network,
-  networkTotal: state.total.network,
-  storageUsage: state.usage.storage,
-  storageTotal: state.total.storage,
-  clusterCosts: state.cluster.costs,
-  namespaces: state.kubernetes.namespaces
+  cpuUsage: getCpuUsage(state, "default"),
+  cpuTotal: getCpuTotalUsage(state),
+  memoryUsage: getMemoryUsage(state, "default"),
+  memoryTotal: getMemoryTotalUsage(state),
+  networkUsage: getNetworkUsage(state, "default"),
+  networkTotal: getNetworkTotalUsage(state),
+  storageUsage: getStorageUsage(state, "default"),
+  storageTotal: getStorageTotalUsage(state),
+  clusterCosts: getClusterCosts(state),
+  namespaces: getClusterNamespaces(state),
+  usageByNamespace: getResourceUsageByNamespace(state)
 });
 
 export default connect(mapStateToProps, {
