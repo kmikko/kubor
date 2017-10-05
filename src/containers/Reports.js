@@ -218,8 +218,8 @@ class Reports extends React.Component {
 
           <div className="column is-8">
             <div className="columns is-multiline">
-              {costs.map(c => (
-                <div className="column is-6">
+              {costs.map((c, key) => (
+                <div key={key} className="column is-6">
                   <CostSummary namespace={c.namespace} costs={c.costs} />
                 </div>
               ))}

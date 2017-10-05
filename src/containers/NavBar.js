@@ -21,19 +21,19 @@ const NavBar = () => {
       <div className="navbar-menu">
         <div className="navbar-start">
           <Link className="navbar-item" to="/">
-            <span class="icon is-small">
-              <i class="fa fa-home" />
+            <span className="icon is-small">
+              <i className="fa fa-home" />
             </span>
             Overview
           </Link>
           <Link className="navbar-item" to="/reports">
-            <span class="icon is-small">
-              <i class="fa fa-search" />
+            <span className="icon is-small">
+              <i className="fa fa-search" />
             </span>Costs explorer
           </Link>
           <Link className="navbar-item" to="/forecasts">
-            <span class="icon is-small">
-              <i class="fa fa-line-chart" />
+            <span className="icon is-small">
+              <i className="fa fa-line-chart" />
             </span>
             Forecasts
           </Link>

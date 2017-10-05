@@ -6,8 +6,8 @@ const CostFilter = ({ costs, onTimeChange }) => {
     <div className="card">
       <header className="card-header">
         <p className="card-header-title">
-          <span class="icon">
-            <i class="fa fa-server" />
+          <span className="icon">
+            <i className="fa fa-server" />
           </span>
           Cluster
         </p>
@@ -17,8 +17,8 @@ const CostFilter = ({ costs, onTimeChange }) => {
         <div className="content">
           <div className="field">
             <label className="label">
-              <span class="icon is-small">
-                <i class="fa fa-calendar" />
+              <span className="icon is-small">
+                <i className="fa fa-calendar" />
               </span>
               Time period
             </label>
@@ -34,13 +34,13 @@ const CostFilter = ({ costs, onTimeChange }) => {
 
           <div className="field">
             <label className="label">
-              <span class="icon is-small">
-                <i class="fa fa-microchip" />
+              <span className="icon is-small">
+                <i className="fa fa-microchip" />
               </span>
               Resources
             </label>
-            {costs.map(c => (
-              <div className="field">
+            {costs.map((c, key) => (
+              <div key={key} className="field">
                 <input
                   className="is-checkbox"
                   id={`${c.type}Checkbox`}
@@ -55,8 +55,8 @@ const CostFilter = ({ costs, onTimeChange }) => {
                 </label>
               </div>
             ))}
-            <span class="icon is-small">
-              <i class="fa fa-shopping-cart" />
+            <span className="icon is-small">
+              <i className="fa fa-shopping-cart" />
             </span>
             <strong>TOTAL</strong>&nbsp;
             {stylePrice(costs.reduce((prev, curr) => prev + curr.cost, 0))}
