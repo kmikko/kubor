@@ -2,8 +2,6 @@ import React from "react";
 import { connect } from "react-redux";
 import PropTypes from "prop-types";
 
-import { fetchCpuUsage, fetchNetworkUsage } from "../actions";
-
 import Card from "../components/Card";
 import Table from "../components/Table";
 import BarChart from "../components/BarChart";
@@ -71,7 +69,4 @@ const mapDispatchToProps = dispatch => ({
 });
 */
 
-export default connect(mapStateToProps, {
-  getCpuUsage: fetchCpuUsage,
-  getNetworkUsage: fetchNetworkUsage
-})(Dashboard);
+export default connect(mapStateToProps, {})(Dashboard);

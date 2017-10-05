@@ -1,8 +1,8 @@
-export function stylePrice(amount, currency = 'USD') {
+export function stylePrice(amount, currency = "USD") {
   const price = (amount / 100).toFixed(2);
-  if (currency === 'USD') {
+  if (currency === "USD") {
     return `$${price}`;
-  } else if (currency === 'EUR') {
+  } else if (currency === "EUR") {
     return `${price}€`;
   } else {
     return price;
@@ -10,7 +10,7 @@ export function stylePrice(amount, currency = 'USD') {
 }
 
 export function styleCostName(cost) {
-  if (cost.type === 'custom') {
+  if (cost.type === "custom") {
     return capitalizeFirstLetter(cost.label);
   } else {
     return capitalizeFirstLetter(cost.type);
@@ -18,7 +18,7 @@ export function styleCostName(cost) {
 }
 
 export function styleBytes(bytes) {
-  console.log('BYTES', bytes);
+  console.log("BYTES", bytes);
   // TODO: This is ugly af
   if (bytes < 1000000) {
     return `${bytes} B`;
@@ -59,7 +59,6 @@ function proportionalUsage(usage, total) {
 }
 
 export function calculateResourceUsageHours(usage) {
-  console.log('-----', usage);
   return usage.filter(x => x[1] !== 0).length;
 }
 
@@ -76,13 +75,13 @@ export function calculateNamespaceUsage(
   namespaceUsage,
   totalUsage
 ) {
-  const resources = ['cpu', 'memory', 'storage', 'network'];
+  const resources = ["cpu", "memory", "storage", "network"];
 
   // CPU
   const cpuTotalPrice = calculateResourceUsagePrice(
     namespaceUsage.cpu,
     totalUsage.cpu,
-    clusterCosts.find(x => x.type === 'cpu').cost
+    clusterCosts.filter(x => x.type === "cpu").map(x => x.cost)[0] || []
   );
   const cpuTotalUsage = calculateResourceUsageHours(namespaceUsage.cpu);
   const cpuPerHourPrice = cpuTotalPrice / cpuTotalUsage;
@@ -91,7 +90,7 @@ export function calculateNamespaceUsage(
   const memoryTotalPrice = calculateResourceUsagePrice(
     namespaceUsage.memory,
     totalUsage.memory,
-    clusterCosts.find(x => x.type === 'memory').cost
+    clusterCosts.filter(x => x.type === "memory").map(x => x.cost)[0] || []
   );
   const memoryTotalUsage = calculateResourceUsageHours(namespaceUsage.memory);
   const memoryPerHourPrice = memoryTotalPrice / memoryTotalUsage;
@@ -100,7 +99,7 @@ export function calculateNamespaceUsage(
   const networkTotalPrice = calculateResourceUsagePrice(
     namespaceUsage.network,
     totalUsage.network,
-    clusterCosts.find(x => x.type === 'network').cost
+    clusterCosts.filter(x => x.type === "network").map(x => x.cost)[0] || []
   );
   const networkTotalUsage = calculateCumulativeUsage(namespaceUsage.network);
   const networkPerHourPrice = 0;
@@ -109,7 +108,7 @@ export function calculateNamespaceUsage(
   const storageTotalPrice = calculateResourceUsagePrice(
     namespaceUsage.storage,
     totalUsage.storage,
-    clusterCosts.find(x => x.type === 'storage').cost
+    clusterCosts.filter(x => x.type === "storage").map(x => x.cost)[0] || []
   );
   const storageTotalUsage = calculateLastUsage(namespaceUsage.storage);
   const storagePerHourPrice = 0;

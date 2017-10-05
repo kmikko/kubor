@@ -9,6 +9,16 @@ const API_URL = process.env.REACT_APP_API_URL || "/api/v1";
 //process.env.REACT_APP_GRAFANA_URL ||
 //"http://prometheus-prometheus-server.default.svc.cluster.local";
 
+export const changeTimeIntervalFilter = (startDate, endDate) => dispatch => {
+  return dispatch({
+    type: "TIME_INTERVAL_FILTER_CHANGE",
+    payload: {
+      startDate: startDate,
+      endDate: endDate
+    }
+  });
+};
+
 export const hideError = id => dispatch => {
   return dispatch({
     type: "RESET_ERROR_MESSAGE",
@@ -60,6 +70,8 @@ export const fetchCpuUsage = (
     .then(data => {
       dispatch({
         type: "FETCH_CPU_USAGE_SUCCESS",
+        start: start,
+        end: end,
         namespace: namespace,
         values: data
       });
@@ -116,6 +128,8 @@ export const fetchMemoryUsage = (
     .then(data => {
       dispatch({
         type: "FETCH_MEMORY_USAGE_SUCCESS",
+        start: start,
+        end: end,
         namespace: namespace,
         values: data
       });
@@ -186,6 +200,8 @@ export const fetchNetworkUsage = (
     .then(data => {
       dispatch({
         type: "FETCH_NETWORK_USAGE_SUCCESS",
+        start: start,
+        end: end,
         namespace: namespace,
         values: data
       });
@@ -256,6 +272,8 @@ export const fetchStorageUsage = (
     .then(data => {
       dispatch({
         type: "FETCH_STORAGE_USAGE_SUCCESS",
+        start: start,
+        end: end,
         namespace: namespace,
         values: data
       });

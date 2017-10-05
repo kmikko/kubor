@@ -1,24 +1,12 @@
 import React from "react";
 import { connect } from "react-redux";
-import differenceInCalendarDays from "date-fns/difference_in_calendar_days";
-import {
-  calculateResourceUsagePrice,
-  calculateResourceUsageHours,
-  calculateNamespaceUsage
-} from "../utils/clusterUtils";
+import { calculateNamespaceUsage } from "../utils/clusterUtils";
 
 import {
-  getCpuUsage,
-  getMemoryUsage,
-  getStorageUsage,
-  getNetworkUsage,
-  getCpuTotalUsage,
-  getMemoryTotalUsage,
-  getStorageTotalUsage,
-  getNetworkTotalUsage,
   getClusterCosts,
   getClusterNamespaces,
-  getResourceUsageByNamespace
+  getResourceUsageByNamespace,
+  getTimeInterval
 } from "../reducers";
 
 import Hero from "../components/Hero";
@@ -35,7 +23,8 @@ import {
   fetchStorageUsage,
   fetchStorageTotal,
   fetchClusterCosts,
-  fetchKubernetesNamespaces
+  fetchKubernetesNamespaces,
+  changeTimeIntervalFilter
 } from "../actions";
 
 import CheckboxGroup from "../components/CheckboxGroup";
@@ -46,31 +35,38 @@ class Reports extends React.Component {
 
     this.state = {
       resources: ["cpu", "memory", "storage", "network"],
-      timePeriod: [new Date(2017, 8, 1), new Date(2017, 8, 30)],
       usage: "hourly",
       fixedCosts: ""
     };
 
     this.handleResourceChange = this.handleResourceChange.bind(this);
     this.handleUsageChange = this.handleUsageChange.bind(this);
-    this.handleCalculateClick = this.handleCalculateClick.bind(this);
     this.handleTimeChange = this.handleTimeChange.bind(this);
   }
 
   componentDidMount() {
-    const { timePeriod } = this.state;
+    // TODO: JS Date object vs unix time stamp
+    // Not it's just a big mess
+    let { startDate } = this.props.timeInterval;
+
     this.props.getClusterCosts(
-      timePeriod[0].getFullYear(),
-      timePeriod[0].getMonth() + 1
+      startDate.getFullYear(),
+      startDate.getMonth() + 1
     );
 
     this.props.getKubernetesNamespaces();
-    //this.handleCalculateClick("kube-system");
   }
 
   componentWillReceiveProps(props) {
-    if (this.props.namespaces.length !== props.namespaces.length) {
-      props.namespaces.forEach(n => this.handleCalculateClick(n));
+    const currentNamespaces = this.props.namespaces;
+    const nextNamespaces = props.namespaces;
+
+    let { startDate, endDate } = this.props.timeInterval;
+    startDate = startDate.getTime() / 1000;
+    endDate = endDate.getTime() / 1000;
+
+    if (JSON.stringify(currentNamespaces) !== JSON.stringify(nextNamespaces)) {
+      nextNamespaces.forEach(n => this.getResourceUsage(startDate, endDate, n));
     }
   }
 
@@ -95,40 +91,6 @@ class Reports extends React.Component {
     });
   }
 
-  handleCalculateClick(namespace) {
-    const { usage, resources, timePeriod } = this.state;
-
-    // TODO
-    const start = Math.round(timePeriod[0] / 1000);
-    const end = Math.round(
-      this.state.timePeriod[1].setHours(23, 59, 59) / 1000
-    );
-
-    const step = { hourly: 3600, daily: 86400 }[usage];
-
-    //if (resources.indexOf("cpu") > -1) {
-    this.props.getCpuUsage(start, end, step, namespace);
-    this.props.getCpuTotal(start, end, step, namespace);
-    //}
-    //if (resources.indexOf("memory") > -1) {
-    this.props.getMemoryUsage(start, end, step, namespace);
-    this.props.getMemoryTotal(start, end, step, namespace);
-    //}
-    //if (resources.indexOf("network") > -1) {
-    this.props.getNetworkUsage(start, end, step, namespace);
-    this.props.getNetworkTotal(start, end, step, namespace);
-    //}
-    //if (resources.indexOf("storage") > -1) {
-    this.props.getStorageUsage(start, end, step, namespace);
-    this.props.getStorageTotal(start, end, step, namespace);
-    //}
-
-    this.props.getClusterCosts(
-      timePeriod[0].getFullYear(),
-      timePeriod[0].getMonth() + 1
-    );
-  }
-
   getResourceUsage(startDate, endDate, namespace, step = 3600) {
     this.props.getCpuUsage(startDate, endDate, step, namespace);
     this.props.getCpuTotal(startDate, endDate, step, namespace);
@@ -138,10 +100,9 @@ class Reports extends React.Component {
     this.props.getNetworkTotal(startDate, endDate, step, namespace);
     this.props.getStorageUsage(startDate, endDate, step, namespace);
     this.props.getStorageTotal(startDate, endDate, step, namespace);
-    this.props.getClusterCosts(
-      startDate.getFullYear(),
-      startDate.getMonth() + 1
-    );
+
+    const date = new Date(startDate * 1000);
+    this.props.getClusterCosts(date.getFullYear(), date.getMonth() + 1);
   }
 
   handleTimeChange(e) {
@@ -152,31 +113,17 @@ class Reports extends React.Component {
       Date.UTC(startDate.getFullYear(), startDate.getMonth() + 1, 0, 23, 59, 59)
     );
 
-    startDate = Math.round(startDate / 1000);
-    endDate = Math.round(endDate / 1000);
-    console.log(`startDate: ${startDate}, endDate: ${endDate}`);
+    this.props.timeIntervalFilterChanged(startDate, endDate);
 
-    /*
+    startDate = startDate.getTime() / 1000;
+    endDate = endDate.getTime() / 1000;
     this.props.namespaces.forEach(n =>
       this.getResourceUsage(startDate, endDate, n)
     );
-    */
   }
 
   render() {
-    let {
-      cpuUsage,
-      cpuTotal,
-      memoryUsage,
-      memoryTotal,
-      networkUsage,
-      networkTotal,
-      storageUsage,
-      storageTotal,
-      clusterCosts,
-      namespaces,
-      usageByNamespace
-    } = this.props;
+    let { clusterCosts, usageByNamespace } = this.props;
 
     // clusterCosts: Cluster total costs by resource
     // total usage by resource
@@ -231,21 +178,16 @@ class Reports extends React.Component {
   }
 }
 
-const mapStateToProps = state => ({
-  cpuUsage: getCpuUsage(state, "default"),
-  cpuTotal: getCpuTotalUsage(state),
-  memoryUsage: getMemoryUsage(state, "default"),
-  memoryTotal: getMemoryTotalUsage(state),
-  networkUsage: getNetworkUsage(state, "default"),
-  networkTotal: getNetworkTotalUsage(state),
-  storageUsage: getStorageUsage(state, "default"),
-  storageTotal: getStorageTotalUsage(state),
-  clusterCosts: getClusterCosts(state),
-  namespaces: getClusterNamespaces(state),
-  usageByNamespace: getResourceUsageByNamespace(state)
-});
+const mapStateToProps = state => {
+  return {
+    clusterCosts: getClusterCosts(state),
+    namespaces: getClusterNamespaces(state),
+    usageByNamespace: getResourceUsageByNamespace(state),
+    timeInterval: getTimeInterval(state)
+  };
+};
 
-export default connect(mapStateToProps, {
+const mapDispatchToProps = {
   getCpuUsage: fetchCpuUsage,
   getCpuTotal: fetchCpuTotal,
   getMemoryUsage: fetchMemoryUsage,
@@ -255,5 +197,8 @@ export default connect(mapStateToProps, {
   getStorageUsage: fetchStorageUsage,
   getStorageTotal: fetchStorageTotal,
   getClusterCosts: fetchClusterCosts,
-  getKubernetesNamespaces: fetchKubernetesNamespaces
-})(Reports);
+  getKubernetesNamespaces: fetchKubernetesNamespaces,
+  timeIntervalFilterChanged: changeTimeIntervalFilter
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Reports);

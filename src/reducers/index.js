@@ -8,6 +8,7 @@ import historical from "./historical";
 import total from "./total";
 import cluster from "./cluster";
 import errors from "./errors";
+import ui from "./ui";
 
 export default combineReducers({
   router: routerReducer,
@@ -17,7 +18,8 @@ export default combineReducers({
   historical,
   total,
   cluster,
-  errors
+  errors,
+  ui
 });
 
 export const makeIncrement = () => dispatch => {
@@ -32,36 +34,8 @@ export const makeIncrement = () => dispatch => {
   }, 3000);
 };
 
-export const getCpuUsage = (state, namespace) => {
-  return state.usage.cpu[namespace] || [];
-};
-
-export const getMemoryUsage = (state, namespace) => {
-  return state.usage.memory[namespace] || [];
-};
-
-export const getStorageUsage = (state, namespace) => {
-  return state.usage.storage[namespace] || [];
-};
-
-export const getNetworkUsage = (state, namespace) => {
-  return state.usage.network[namespace] || [];
-};
-
-export const getCpuTotalUsage = state => {
-  return state.total.cpu;
-};
-
-export const getMemoryTotalUsage = state => {
-  return state.total.memory;
-};
-
-export const getStorageTotalUsage = state => {
-  return state.total.storage;
-};
-
-export const getNetworkTotalUsage = state => {
-  return state.total.network;
+export const getTimeInterval = state => {
+  return { startDate: state.ui.startDate, endDate: state.ui.endDate };
 };
 
 export const getClusterCosts = state => {
@@ -73,17 +47,33 @@ export const getClusterNamespaces = state => {
 };
 
 export const getResourceUsageByNamespace = state => {
+  let { startDate, endDate } = getTimeInterval(state);
+  startDate = startDate.getTime() / 1000;
+  endDate = endDate.getTime() / 1000;
+
   const namespaces = getClusterNamespaces(state);
-  return namespaces.map(n => ({
-    namespace: n,
-    usage: {
-      cpu: state.usage.cpu[n] || [],
-      memory: state.usage.memory[n] || [],
-      storage: state.usage.storage[n] || [],
-      network: state.usage.network[n] || []
-    },
-    total: getClusterResourceUsage(state)
-  }));
+
+  return namespaces.map(n => {
+    const monthlyUsage = state.usage.byMonth[`${startDate}-${endDate}`] || [];
+
+    const usage = (state.usage.byNamespace[n] || [])
+      .map(u => state.usage.byId[u])
+      .filter(u => monthlyUsage.includes(u.id));
+
+    return {
+      namespace: n,
+      usage: {
+        cpu: usage.filter(u => u.type === "cpu").map(x => x.values)[0] || [],
+        memory:
+          usage.filter(u => u.type === "memory").map(x => x.values)[0] || [],
+        storage:
+          usage.filter(u => u.type === "storage").map(x => x.values)[0] || [],
+        network:
+          usage.filter(u => u.type === "network").map(x => x.values)[0] || []
+      },
+      total: getClusterResourceUsage(state)
+    };
+  });
 };
 
 const getClusterResourceUsage = state => ({
