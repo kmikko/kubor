@@ -4,7 +4,7 @@ import { connect } from "react-redux";
 
 //import "bulma/css/bulma.css";
 import "../styles/bulma.css";
-import "../../node_modules/font-awesome/css/font-awesome.min.css";
+import "font-awesome/css/font-awesome.css";
 import "./App.css";
 //import "font-awesome/css/font-awesome.min.css";
 
