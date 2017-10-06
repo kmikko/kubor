@@ -12,8 +12,8 @@ const NODE_ENV = process.env.NODE_ENV || "production";
 const knexConfig = require("./knexfile.js")[NODE_ENV];
 const knex = require("knex")(knexConfig);
 
-const GRAFANA_URL =
-  process.env.GRAFANA_URL ||
+const PROMETHEUS_URL =
+  process.env.PROMETHEUS_URL ||
   "http://prometheus-prometheus-server.default.svc.cluster.local";
 
 const NODE_PORT = process.env.NODE_PORT || 3000;
@@ -21,12 +21,12 @@ const NODE_PORT = process.env.NODE_PORT || 3000;
 app.use(cors());
 app.use(express.static(path.join(__dirname, "/")));
 app.use(
-  "/api/v1/proxy/grafana",
+  "/api/v1/proxy/prometheus",
   proxy({
-    target: GRAFANA_URL,
+    target: PROMETHEUS_URL,
     changeOrigin: true,
     pathRewrite: {
-      "^/api/v1/proxy/grafana": "/"
+      "^/api/v1/proxy/prometheus": "/"
     }
   })
 );

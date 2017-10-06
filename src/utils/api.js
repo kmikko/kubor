@@ -7,10 +7,8 @@ const handleErrors = response => {
   return response;
 };
 
-// TODO: Its prometheus, not grafana
-// TODO: add hanelerror
 export const fetchKubernetesNamespaces = () => {
-  return fetch(`${API_ROOT}/proxy/grafana/api/v1/query?query=kube_pod_info`)
+  return fetch(`${API_ROOT}/proxy/prometheus/api/v1/query?query=kube_pod_info`)
     .then(handleErrors)
     .then(response => response.json())
     .then(data =>
@@ -35,7 +33,7 @@ export const fetchClusterCosts = (year, month) => {
 
 export const fetchCpuUsage = (start, end, step, namespace) => {
   return fetch(
-    `${API_ROOT}/proxy/grafana/api/v1/query_range?query=sum%20(rate%20(container_cpu_usage_seconds_total%7Bnamespace%3D%22${namespace}%22%7D%5B1m%5D%20)%20OR%20on()%20vector(0))&start=${start}&end=${end}&step=${step}`
+    `${API_ROOT}/proxy/prometheus/api/v1/query_range?query=sum%20(rate%20(container_cpu_usage_seconds_total%7Bnamespace%3D%22${namespace}%22%7D%5B1m%5D%20)%20OR%20on()%20vector(0))&start=${start}&end=${end}&step=${step}`
   )
     .then(handleErrors)
     .then(response => response.json())
@@ -47,7 +45,7 @@ export const fetchCpuUsage = (start, end, step, namespace) => {
 
 export const fetchCpuTotal = (start, end, step) => {
   return fetch(
-    `${API_ROOT}/proxy/grafana/api/v1/query_range?query=sum(machine_cpu_cores%20OR%20on()%20vector(0))%20&start=${start}&end=${end}&step=${step}`
+    `${API_ROOT}/proxy/prometheus/api/v1/query_range?query=sum(machine_cpu_cores%20OR%20on()%20vector(0))%20&start=${start}&end=${end}&step=${step}`
   )
     .then(handleErrors)
     .then(response => response.json())
@@ -59,7 +57,7 @@ export const fetchCpuTotal = (start, end, step) => {
 
 export const fetchMemoryUsage = (start, end, step, namespace) => {
   return fetch(
-    `${API_ROOT}/proxy/grafana/api/v1/query_range?query=sum(container_memory_usage_bytes%7Bnamespace%3D%22${namespace}%22%7D%20OR%20on()%20vector(0))&start=${start}&end=${end}&step=${step}`
+    `${API_ROOT}/proxy/prometheus/api/v1/query_range?query=sum(container_memory_usage_bytes%7Bnamespace%3D%22${namespace}%22%7D%20OR%20on()%20vector(0))&start=${start}&end=${end}&step=${step}`
   )
     .then(handleErrors)
     .then(response => response.json())
@@ -71,7 +69,7 @@ export const fetchMemoryUsage = (start, end, step, namespace) => {
 
 export const fetchMemoryTotal = (start, end, step) => {
   return fetch(
-    `${API_ROOT}/proxy/grafana/api/v1/query_range?query=sum(machine_memory_bytes%20OR%20on()%20vector(0))&start=${start}&end=${end}&step=${step}`
+    `${API_ROOT}/proxy/prometheus/api/v1/query_range?query=sum(machine_memory_bytes%20OR%20on()%20vector(0))&start=${start}&end=${end}&step=${step}`
   )
     .then(handleErrors)
     .then(response => response.json())
@@ -83,7 +81,7 @@ export const fetchMemoryTotal = (start, end, step) => {
 
 export const fetchNetworkUsage = (start, end, step, namespace) => {
   return fetch(
-    `${API_ROOT}/proxy/grafana/api/v1/query_range?query=sum(container_network_transmit_bytes_total%7Bnamespace%3D%22${namespace}%22%7D%20OR%20on()%20vector(0))&start=${start -
+    `${API_ROOT}/proxy/prometheus/api/v1/query_range?query=sum(container_network_transmit_bytes_total%7Bnamespace%3D%22${namespace}%22%7D%20OR%20on()%20vector(0))&start=${start -
       step}&end=${end}&step=${step}`
   )
     .then(handleErrors)
@@ -109,7 +107,7 @@ export const fetchNetworkUsage = (start, end, step, namespace) => {
 
 export const fetchNetworkTotal = (start, end, step) => {
   return fetch(
-    `${API_ROOT}/proxy/grafana/api/v1/query_range?query=sum(container_network_transmit_bytes_total%20OR%20on()%20vector(0))&start=${start -
+    `${API_ROOT}/proxy/prometheus/api/v1/query_range?query=sum(container_network_transmit_bytes_total%20OR%20on()%20vector(0))&start=${start -
       step}&end=${end}&step=${step}`
   )
     .then(handleErrors)
@@ -135,7 +133,7 @@ export const fetchNetworkTotal = (start, end, step) => {
 
 export const fetchStorageUsage = (start, end, step, namespace) => {
   return fetch(
-    `${API_ROOT}/proxy/grafana/api/v1/query_range?query=sum(container_fs_usage_bytes%7Bnamespace%3D%22${namespace}%22%7D)%20OR%20on()%20vector(0)&start=${start}&end=${end}&step=${step}`
+    `${API_ROOT}/proxy/prometheus/api/v1/query_range?query=sum(container_fs_usage_bytes%7Bnamespace%3D%22${namespace}%22%7D)%20OR%20on()%20vector(0)&start=${start}&end=${end}&step=${step}`
   )
     .then(handleErrors)
     .then(response => response.json())
@@ -147,7 +145,7 @@ export const fetchStorageUsage = (start, end, step, namespace) => {
 
 export const fetchStorageTotal = (start, end, step) => {
   return fetch(
-    `${API_ROOT}/proxy/grafana/api/v1/query_range?query=sum(container_fs_usage_bytes)%20OR%20on()%20vector(0)&start=${start}&end=${end}&step=${step}`
+    `${API_ROOT}/proxy/prometheus/api/v1/query_range?query=sum(container_fs_usage_bytes)%20OR%20on()%20vector(0)&start=${start}&end=${end}&step=${step}`
   )
     .then(handleErrors)
     .then(response => response.json())
