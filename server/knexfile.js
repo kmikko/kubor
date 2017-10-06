@@ -4,7 +4,7 @@ module.exports = {
   development: {
     client: "sqlite3",
     connection: {
-      filename: "./db/kubor.sqlite"
+      filename: "./db/data/kubor.sqlite"
     },
     pool: {
       afterCreate: (conn, cb) => {
@@ -19,7 +19,7 @@ module.exports = {
   staging: {
     client: "sqlite3",
     connection: {
-      filename: "./db/kubor.sqlite"
+      filename: "./db/data/kubor.sqlite"
     },
     pool: {
       afterCreate: (conn, cb) => {
@@ -34,7 +34,7 @@ module.exports = {
   production: {
     client: "sqlite3",
     connection: {
-      filename: "./db/kubor.sqlite"
+      filename: "./db/data/kubor.sqlite"
     },
     pool: {
       afterCreate: (conn, cb) => {
