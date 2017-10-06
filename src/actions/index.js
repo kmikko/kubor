@@ -5,9 +5,7 @@ import * as api from "../api";
 import { getIsFetching } from "../reducers";
 */
 
-const API_URL = process.env.REACT_APP_API_URL || "/api/v1";
-//process.env.REACT_APP_GRAFANA_URL ||
-//"http://prometheus-prometheus-server.default.svc.cluster.local";
+import * as api from "../utils/api";
 
 export const changeTimeIntervalFilter = (startDate, endDate) => dispatch => {
   return dispatch({
@@ -34,9 +32,8 @@ export const fetchClusterCosts = (
     type: "FETCH_CLUSTER_COSTS_REQUEST"
   });
 
-  return fetch(`${API_URL}/cluster/costs?year=${year}&month=${month}`)
-    .then(response => response.json())
-    .then(data => data)
+  return api
+    .fetchClusterCosts(year, month)
     .then(data => {
       dispatch({
         type: "FETCH_CLUSTER_COSTS_SUCCESS",
@@ -61,12 +58,8 @@ export const fetchCpuUsage = (
     type: "FETCH_CPU_USAGE_REQUEST"
   });
 
-  return fetch(
-    `${API_URL}/proxy/grafana/api/v1/query_range?query=sum%20(rate%20(container_cpu_usage_seconds_total%7Bnamespace%3D%22${namespace}%22%7D%5B1m%5D%20)%20OR%20on()%20vector(0))&start=${start}&end=${end}&step=${step}`
-  )
-    .then(response => response.json())
-    .then(data => data["data"]["result"][0]["values"])
-    .then(data => data.map(x => [x[0], parseFloat(x[1])]))
+  return api
+    .fetchCpuUsage(start, end, step, namespace)
     .then(data => {
       dispatch({
         type: "FETCH_CPU_USAGE_SUCCESS",
@@ -89,12 +82,8 @@ export const fetchCpuTotal = (start, end, step = 3600) => dispatch => {
     type: "FETCH_CPU_TOTAL_REQUEST"
   });
 
-  return fetch(
-    `${API_URL}/proxy/grafana/api/v1/query_range?query=sum(machine_cpu_cores%20OR%20on()%20vector(0))%20&start=${start}&end=${end}&step=${step}`
-  )
-    .then(response => response.json())
-    .then(data => data["data"]["result"][0]["values"])
-    .then(data => data.map(x => [x[0], parseFloat(x[1])]))
+  return api
+    .fetchCpuTotal(start, end, step)
     .then(data => {
       dispatch({
         type: "FETCH_CPU_TOTAL_SUCCESS",
@@ -119,12 +108,8 @@ export const fetchMemoryUsage = (
     type: "FETCH_MEMORY_USAGE_REQUEST"
   });
 
-  return fetch(
-    `${API_URL}/proxy/grafana/api/v1/query_range?query=sum(container_memory_usage_bytes%7Bnamespace%3D%22${namespace}%22%7D%20OR%20on()%20vector(0))&start=${start}&end=${end}&step=${step}`
-  )
-    .then(response => response.json())
-    .then(data => data["data"]["result"][0]["values"])
-    .then(data => data.map(x => [x[0], parseFloat(x[1])]))
+  return api
+    .fetchMemoryUsage(start, end, step, namespace)
     .then(data => {
       dispatch({
         type: "FETCH_MEMORY_USAGE_SUCCESS",
@@ -147,12 +132,8 @@ export const fetchMemoryTotal = (start, end, step = 3600) => dispatch => {
     type: "FETCH_MEMORY_TOTAL_REQUEST"
   });
 
-  return fetch(
-    `${API_URL}/proxy/grafana/api/v1/query_range?query=sum(machine_memory_bytes%20OR%20on()%20vector(0))&start=${start}&end=${end}&step=${step}`
-  )
-    .then(response => response.json())
-    .then(data => data["data"]["result"][0]["values"])
-    .then(data => data.map(x => [x[0], parseFloat(x[1])]))
+  return api
+    .fetchMemoryTotal(start, end, step)
     .then(data => {
       dispatch({
         type: "FETCH_MEMORY_TOTAL_SUCCESS",
@@ -177,26 +158,8 @@ export const fetchNetworkUsage = (
     type: "FETCH_NETWORK_USAGE_REQUEST"
   });
 
-  return fetch(
-    `${API_URL}/proxy/grafana/api/v1/query_range?query=sum(container_network_transmit_bytes_total%7Bnamespace%3D%22${namespace}%22%7D%20OR%20on()%20vector(0))&start=${start -
-      step}&end=${end}&step=${step}`
-  )
-    .then(response => response.json())
-    .then(data => data["data"]["result"][0]["values"])
-    .then(data => data.map(x => [x[0], parseFloat(x[1])]))
-    .then(data =>
-      data
-        .reduce((prev, currVal, currIdx) => [
-          ...prev,
-          [
-            data[currIdx][0],
-            data[currIdx][1] === 0 || data[currIdx - 1][1] === 0
-              ? 0
-              : data[currIdx][1] - data[currIdx - 1][1]
-          ]
-        ])
-        .slice(2)
-    )
+  return api
+    .fetchNetworkUsage(start, end, step, namespace)
     .then(data => {
       dispatch({
         type: "FETCH_NETWORK_USAGE_SUCCESS",
@@ -219,26 +182,8 @@ export const fetchNetworkTotal = (start, end, step = 3600) => dispatch => {
     type: "FETCH_NETWORK_TOTAL_REQUEST"
   });
 
-  return fetch(
-    `${API_URL}/proxy/grafana/api/v1/query_range?query=sum(container_network_transmit_bytes_total%20OR%20on()%20vector(0))&start=${start -
-      step}&end=${end}&step=${step}`
-  )
-    .then(response => response.json())
-    .then(data => data["data"]["result"][0]["values"])
-    .then(data => data.map(x => [x[0], parseFloat(x[1])]))
-    .then(data =>
-      data
-        .reduce((prev, currVal, currIdx) => [
-          ...prev,
-          [
-            data[currIdx][0],
-            data[currIdx][1] === 0 || data[currIdx - 1][1] === 0
-              ? 0
-              : data[currIdx][1] - data[currIdx - 1][1]
-          ]
-        ])
-        .slice(2)
-    )
+  return api
+    .fetchNetworkTotal(start, end, step)
     .then(data => {
       dispatch({
         type: "FETCH_NETWORK_TOTAL_SUCCESS",
@@ -263,12 +208,8 @@ export const fetchStorageUsage = (
     type: "FETCH_STORAGE_USAGE_REQUEST"
   });
 
-  return fetch(
-    `${API_URL}/proxy/grafana/api/v1/query_range?query=sum(container_fs_usage_bytes%7Bnamespace%3D%22${namespace}%22%7D)%20OR%20on()%20vector(0)&start=${start}&end=${end}&step=${step}`
-  )
-    .then(response => response.json())
-    .then(data => data["data"]["result"][0]["values"])
-    .then(data => data.map(x => [x[0], parseFloat(x[1])]))
+  return api
+    .fetchStorageUsage(start, end, step, namespace)
     .then(data => {
       dispatch({
         type: "FETCH_STORAGE_USAGE_SUCCESS",
@@ -291,12 +232,8 @@ export const fetchStorageTotal = (start, end, step = 3600) => dispatch => {
     type: "FETCH_STORAGE_TOTAL_REQUEST"
   });
 
-  return fetch(
-    `${API_URL}/proxy/grafana/api/v1/query_range?query=sum(container_fs_usage_bytes)%20OR%20on()%20vector(0)&start=${start}&end=${end}&step=${step}`
-  )
-    .then(response => response.json())
-    .then(data => data["data"]["result"][0]["values"])
-    .then(data => data.map(x => [x[0], parseFloat(x[1])]))
+  return api
+    .fetchStorageTotal(start, end, step)
     .then(data => {
       dispatch({
         type: "FETCH_STORAGE_TOTAL_SUCCESS",
@@ -316,15 +253,8 @@ export const fetchKubernetesNamespaces = () => dispatch => {
     type: "FETCH_KUBERNETES_NAMESPACES_REQUEST"
   });
 
-  return fetch(`${API_URL}/proxy/grafana/api/v1/query?query=kube_pod_info`)
-    .then(response => response.json())
-    .then(data =>
-      Array.from(
-        new Set(
-          data["data"]["result"].map(result => result["metric"]["namespace"])
-        )
-      )
-    )
+  return api
+    .fetchKubernetesNamespaces()
     .then(data => {
       dispatch({
         type: "FETCH_KUBERNETES_NAMESPACES_SUCCESS",
