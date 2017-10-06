@@ -29,6 +29,5 @@ WORKDIR /app
 COPY server/ /app
 RUN yarn install
 
-CMD node index.js
-#CMD serve -s /app -p ${NODE_PORT}
 EXPOSE ${NODE_PORT}
+CMD yarn start
