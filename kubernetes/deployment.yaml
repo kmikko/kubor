@@ -14,6 +14,6 @@ spec:
         image: localhost:5000/kubor:0.1.0
         ports:
         - containerPort: 4000
-      - name: kubectl
-        image: localhost:5000/kubectl:v1.9.0-alpha.0.704
-        args: ["proxy", "-p", "8001"]
+      #- name: kubectl
+      #  image: localhost:5000/kubectl:v1.9.0-alpha.0.704
+      #  args: ["proxy", "-p", "8001"]
