@@ -1,44 +1,30 @@
 import React from "react";
 import { stylePrice, styleCostName } from "../utils/clusterUtils";
+import HorizontalSelector from "./HorizontalSelector";
+import { generateMonths } from "../utils/clusterUtils";
 
-const CostFilter = ({ costs, onTimeChange }) => {
+const CostFilter = ({
+  costs,
+  resourceFilters,
+  onTimeChange,
+  onResourceFilterChange
+}) => {
+  const months = generateMonths(new Date(), 6);
+  const index = months.length - 1;
   return (
     <div className="card">
       <header className="card-header">
-        <p className="card-header-title">
-          <span className="icon">
-            <i className="fa fa-server" />
-          </span>
-          Cluster
-        </p>
+        <HorizontalSelector
+          values={months}
+          index={index - 1}
+          onSelectionChange={onTimeChange}
+        />
       </header>
 
       <div className="card-content">
         <div className="content">
           <div className="field">
-            <label className="label">
-              <span className="icon is-small">
-                <i className="fa fa-calendar" />
-              </span>
-              Time period
-            </label>
-            <div className="control">
-              <div className="select">
-                <select onChange={onTimeChange}>
-                  <option value="2017-09">September 2017</option>
-                  <option value="2017-10">October 2017</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <div className="field">
-            <label className="label">
-              <span className="icon is-small">
-                <i className="fa fa-microchip" />
-              </span>
-              Resources
-            </label>
+            <label className="label">Resources</label>
             {costs.map((c, key) => (
               <div key={key} className="field">
                 <input
@@ -47,17 +33,14 @@ const CostFilter = ({ costs, onTimeChange }) => {
                   type="checkbox"
                   name="resource"
                   value={c.type}
-                  //onChange={this.handleResourceChange}
-                  //checked={this.state.resources.indexOf("cpu") > -1}
+                  onChange={onResourceFilterChange}
+                  checked={resourceFilters.includes(c.type)}
                 />
                 <label htmlFor={`${c.type}Checkbox`}>
                   {styleCostName(c)} ({stylePrice(c.cost, c.currency)})
                 </label>
               </div>
             ))}
-            <span className="icon is-small">
-              <i className="fa fa-shopping-cart" />
-            </span>
             <strong>TOTAL</strong>&nbsp;
             {stylePrice(costs.reduce((prev, curr) => prev + curr.cost, 0))}
           </div>

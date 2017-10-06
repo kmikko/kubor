@@ -1,9 +1,13 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { stylePrice, styleBytes } from '../utils/clusterUtils';
+import React from "react";
+import PropTypes from "prop-types";
+import { stylePrice, styleBytes } from "../utils/clusterUtils";
 
-const CostSummary = props => {
-  const { namespace, costs } = props;
+const CostSummary = ({ namespace, costs, resourceFilters }) => {
+  costs = Object.assign(
+    ...Object.keys(costs)
+      .filter(key => resourceFilters.includes(key))
+      .map(key => ({ [key]: costs[key] }))
+  );
   // TODO:
   const perHourCosts = Object.keys(costs).reduce(
     (total, key) => total + costs[key].perHourPrice,
@@ -30,7 +34,7 @@ const CostSummary = props => {
               </tr>
             </thead>
             <tbody>
-              {costs.hasOwnProperty('cpu') ? (
+              {costs.hasOwnProperty("cpu") ? (
                 <tr>
                   <td>CPU</td>
                   <td>{costs.cpu.totalUsage} hours</td>
@@ -38,7 +42,7 @@ const CostSummary = props => {
                   <td>{stylePrice(costs.cpu.totalPrice)}</td>
                 </tr>
               ) : null}
-              {costs.hasOwnProperty('memory') ? (
+              {costs.hasOwnProperty("memory") ? (
                 <tr>
                   <td>Memory</td>
                   <td>{costs.memory.totalUsage} hours</td>
@@ -46,7 +50,7 @@ const CostSummary = props => {
                   <td>{stylePrice(costs.memory.totalPrice)}</td>
                 </tr>
               ) : null}
-              {costs.hasOwnProperty('network') ? (
+              {costs.hasOwnProperty("network") ? (
                 <tr>
                   <td>Network (Tx)</td>
                   <td>{styleBytes(costs.network.totalUsage)}</td>
@@ -54,7 +58,7 @@ const CostSummary = props => {
                   <td>{stylePrice(costs.network.totalPrice)}</td>
                 </tr>
               ) : null}
-              {costs.hasOwnProperty('storage') ? (
+              {costs.hasOwnProperty("storage") ? (
                 <tr>
                   <td>Storage</td>
                   <td>{styleBytes(costs.storage.totalUsage)}</td>

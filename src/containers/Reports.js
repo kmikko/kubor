@@ -6,7 +6,8 @@ import {
   getClusterCosts,
   getClusterNamespaces,
   getResourceUsageByNamespace,
-  getTimeInterval
+  getTimeInterval,
+  getResourceFilters
 } from "../reducers";
 
 import Hero from "../components/Hero";
@@ -24,7 +25,8 @@ import {
   fetchStorageTotal,
   fetchClusterCosts,
   fetchKubernetesNamespaces,
-  changeTimeIntervalFilter
+  changeTimeIntervalFilter,
+  changeResourceFilter
 } from "../actions";
 
 import CheckboxGroup from "../components/CheckboxGroup";
@@ -39,7 +41,9 @@ class Reports extends React.Component {
       fixedCosts: ""
     };
 
-    this.handleResourceChange = this.handleResourceChange.bind(this);
+    this.handleResourceFilterChange = this.handleResourceFilterChange.bind(
+      this
+    );
     this.handleUsageChange = this.handleUsageChange.bind(this);
     this.handleTimeChange = this.handleTimeChange.bind(this);
   }
@@ -70,10 +74,12 @@ class Reports extends React.Component {
     }
   }
 
-  handleResourceChange(event) {
+  handleResourceFilterChange(event) {
     const checked = event.target.checked;
     const value = event.target.value;
 
+    this.props.resourceFilterChanged(value, checked);
+    /*
     this.setState((prevState, props) => ({
       resources: checked
         ? [...prevState.resources, value]
@@ -83,6 +89,7 @@ class Reports extends React.Component {
               prevState.resources.slice(prevState.resources.indexOf(value) + 1)
             )
     }));
+    */
   }
 
   handleUsageChange(event) {
@@ -105,10 +112,9 @@ class Reports extends React.Component {
     this.props.getClusterCosts(date.getFullYear(), date.getMonth() + 1);
   }
 
-  handleTimeChange(e) {
-    const { value } = e.target;
-    console.log("value", value);
-    let startDate = new Date(value + "T00:00:00.000Z");
+  handleTimeChange(value) {
+    value = new Date(value);
+    let startDate = new Date(Date.UTC(value.getFullYear(), value.getMonth()));
     let endDate = new Date(
       Date.UTC(startDate.getFullYear(), startDate.getMonth() + 1, 0, 23, 59, 59)
     );
@@ -123,7 +129,7 @@ class Reports extends React.Component {
   }
 
   render() {
-    let { clusterCosts, usageByNamespace } = this.props;
+    let { clusterCosts, usageByNamespace, resourceFilters } = this.props;
 
     // clusterCosts: Cluster total costs by resource
     // total usage by resource
@@ -159,7 +165,9 @@ class Reports extends React.Component {
           <div className="column is-4">
             <CostFilter
               costs={clusterCosts}
+              resourceFilters={resourceFilters}
               onTimeChange={this.handleTimeChange}
+              onResourceFilterChange={this.handleResourceFilterChange}
             />
           </div>
 
@@ -167,7 +175,11 @@ class Reports extends React.Component {
             <div className="columns is-multiline">
               {costs.map((c, key) => (
                 <div key={key} className="column is-6">
-                  <CostSummary namespace={c.namespace} costs={c.costs} />
+                  <CostSummary
+                    namespace={c.namespace}
+                    costs={c.costs}
+                    resourceFilters={resourceFilters}
+                  />
                 </div>
               ))}
             </div>
@@ -183,7 +195,8 @@ const mapStateToProps = state => {
     clusterCosts: getClusterCosts(state),
     namespaces: getClusterNamespaces(state),
     usageByNamespace: getResourceUsageByNamespace(state),
-    timeInterval: getTimeInterval(state)
+    timeInterval: getTimeInterval(state),
+    resourceFilters: getResourceFilters(state)
   };
 };
 
@@ -198,7 +211,8 @@ const mapDispatchToProps = {
   getStorageTotal: fetchStorageTotal,
   getClusterCosts: fetchClusterCosts,
   getKubernetesNamespaces: fetchKubernetesNamespaces,
-  timeIntervalFilterChanged: changeTimeIntervalFilter
+  timeIntervalFilterChanged: changeTimeIntervalFilter,
+  resourceFilterChanged: changeResourceFilter
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(Reports);

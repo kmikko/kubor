@@ -137,3 +137,14 @@ export function calculateNamespaceUsage(
   };
   return costs;
 }
+
+export const generateMonths = (date, count) => {
+  const year = date.getFullYear();
+  const month = date.getMonth();
+
+  return Array(count)
+    .fill(0)
+    .map((x, i) => new Date(year, month - i))
+    .map(d => d.toLocaleString("en", { month: "long", year: "numeric" }))
+    .reverse();
+};

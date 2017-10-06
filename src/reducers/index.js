@@ -38,6 +38,10 @@ export const getTimeInterval = state => {
   return { startDate: state.ui.startDate, endDate: state.ui.endDate };
 };
 
+export const getResourceFilters = state => {
+  return state.ui.resourceFilters;
+};
+
 export const getClusterCosts = state => {
   return state.cluster.costs;
 };

@@ -17,6 +17,16 @@ export const changeTimeIntervalFilter = (startDate, endDate) => dispatch => {
   });
 };
 
+export const changeResourceFilter = (resource, checked) => dispatch => {
+  return dispatch({
+    type: "RESOURCE_FILTER_CHANGE",
+    payload: {
+      resource: resource,
+      checked: checked
+    }
+  });
+};
+
 export const hideError = id => dispatch => {
   return dispatch({
     type: "RESET_ERROR_MESSAGE",
