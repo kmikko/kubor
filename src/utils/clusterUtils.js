@@ -75,8 +75,6 @@ export function calculateNamespaceUsage(
   namespaceUsage,
   totalUsage
 ) {
-  const resources = ["cpu", "memory", "storage", "network"];
-
   // CPU
   const cpuTotalPrice = calculateResourceUsagePrice(
     namespaceUsage.cpu,

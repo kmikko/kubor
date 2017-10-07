@@ -32,9 +32,11 @@ const CostFilter = ({
                   id={`${c.type}Checkbox`}
                   type="checkbox"
                   name="resource"
-                  value={c.type}
+                  value={[c.type, c.label].filter(x => x.length > 0).join("-")}
                   onChange={onResourceFilterChange}
-                  checked={resourceFilters.includes(c.type)}
+                  checked={resourceFilters.includes(
+                    [c.type, c.label].filter(x => x.length > 0).join("-")
+                  )}
                 />
                 <label htmlFor={`${c.type}Checkbox`}>
                   {styleCostName(c)} ({stylePrice(c.cost, c.currency)})

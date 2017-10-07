@@ -154,6 +154,14 @@ class Reports extends React.Component {
       )
     }));
 
+    const customCosts = clusterCosts
+      .filter(c => c.type === "custom")
+      .filter(c =>
+        resourceFilters.includes(
+          [c.type, c.label].filter(x => x.length > 0).join("-")
+        )
+      );
+
     return (
       <div>
         <Hero
@@ -178,6 +186,7 @@ class Reports extends React.Component {
                   <CostSummary
                     namespace={c.namespace}
                     costs={c.costs}
+                    customCosts={customCosts}
                     resourceFilters={resourceFilters}
                   />
                 </div>

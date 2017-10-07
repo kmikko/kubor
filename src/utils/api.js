@@ -26,7 +26,6 @@ export const fetchClusterCosts = (year, month) => {
   return fetch(`${API_ROOT}/cluster/costs?year=${year}&month=${month}`)
     .then(handleErrors)
     .then(response => response.json())
-    .then(data => data)
     .then(data => Promise.resolve(data))
     .catch(error => Promise.reject(error));
 };
