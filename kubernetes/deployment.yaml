@@ -15,7 +15,7 @@ spec:
           claimName: kubor-pv-claim
       containers:
       - name: kubor
-        image: localhost:5000/kubor:0.1.3
+        image: localhost:5000/kubor:latest
         ports:
         - containerPort: 4000
         volumeMounts:
@@ -23,7 +23,7 @@ spec:
           name: kubor-pv-storage
         env:
         - name: PROMETHEUS_URL
-          value: "http://prometheus-prometheus-server.default.svc.cluster.local"
+          value: "http://prometheus-k8s.monitoring.svc.cluster.local:9090"
       #- name: kubectl
       #  image: localhost:5000/kubectl:v1.9.0-alpha.0.704
       #  args: ["proxy", "-p", "8001"]
