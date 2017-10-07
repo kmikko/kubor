@@ -2,11 +2,10 @@ import React from "react";
 import { Route, Switch } from "react-router-dom";
 import { connect } from "react-redux";
 
-//import "bulma/css/bulma.css";
+// Using Bulma with extensions so custom build css
 import "../styles/bulma.css";
 import "font-awesome/css/font-awesome.css";
 import "./App.css";
-//import "font-awesome/css/font-awesome.min.css";
 
 import TopBar from "./TopBar";
 import NavBar from "./NavBar";
