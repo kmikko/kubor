@@ -21,6 +21,9 @@ spec:
         volumeMounts:
         - mountPath: "/app/db/data"
           name: kubor-pv-storage
+        env:
+        - name: PROMETHEUS_URL
+          value: "http://prometheus-prometheus-server.default.svc.cluster.local"
       #- name: kubectl
       #  image: localhost:5000/kubectl:v1.9.0-alpha.0.704
       #  args: ["proxy", "-p", "8001"]
