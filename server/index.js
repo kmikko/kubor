@@ -12,6 +12,12 @@ const NODE_ENV = process.env.NODE_ENV || "production";
 const knexConfig = require("./knexfile.js")[NODE_ENV];
 const knex = require("knex")(knexConfig);
 
+const CronJob = require("cron").CronJob;
+
+const metrics = require("../server/utils/metrics");
+
+const { fetchNamespaceUsage, fetchTotalUsage } = metrics;
+
 const PROMETHEUS_URL =
   process.env.PROMETHEUS_URL ||
   "http://prometheus-prometheus-server.default.svc.cluster.local";
@@ -30,6 +36,24 @@ app.use(
     }
   })
 );
+
+app.get("/api/v1/cluster/metrics", function(req, res, next) {
+  const { start, end, type, namespace } = req.query;
+
+  if ([start, end, type, namespace].includes(undefined)) {
+    res.sendStatus(422);
+    return next();
+  }
+
+  knex
+    .select("timestamp", "value")
+    .from("metrics")
+    .whereBetween("timestamp", [start, end])
+    .where("type", type)
+    .where("namespace", namespace)
+    .then(data => data.map(row => [row["timestamp"], row["value"]]))
+    .then(data => res.json(data));
+});
 
 // GET /api/v1/cluster/costs?year=2017&month=9
 // List all cluster costs, filter by year and month
@@ -123,3 +147,49 @@ app.get("/*", function(req, res) {
 });
 
 app.listen(NODE_PORT);
+
+// TODO: Decouple this
+new CronJob(
+  "0 5 */1 * * *",
+  function() {
+    console.log("Running", new Date().toUTCString());
+    const start = new Date();
+    const startDate =
+      new Date(
+        Date.UTC(
+          start.getUTCFullYear(),
+          start.getUTCMonth(),
+          start.getUTCDate(),
+          start.getUTCHours() - 1,
+          0,
+          0
+        )
+      ) / 1000;
+    const endDate =
+      new Date(
+        Date.UTC(
+          start.getUTCFullYear(),
+          start.getUTCMonth(),
+          start.getUTCDate(),
+          start.getUTCHours() - 1,
+          59,
+          59,
+          999
+        )
+      ) / 1000;
+
+    // 3600s = 1h
+    const STEP = 3600;
+
+    Promise.all([
+      fetchNamespaceUsage(startDate, endDate, STEP),
+      fetchTotalUsage(startDate, endDate, STEP)
+    ])
+      .then(data => data.reduce((acc, curr) => acc.concat(curr), []))
+      .then(data => knex.batchInsert("metrics", data, 100))
+      .catch(err => console.error(err));
+  },
+  null,
+  true,
+  "Europe/Helsinki"
+);

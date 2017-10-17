@@ -1,10 +1,8 @@
-// Update with your config settings.
-
 module.exports = {
   development: {
     client: "sqlite3",
     connection: {
-      filename: "./db/data/kubor.sqlite"
+      filename: __dirname + "/db/data/kubor.sqlite"
     },
     pool: {
       afterCreate: (conn, cb) => {
@@ -19,7 +17,7 @@ module.exports = {
   staging: {
     client: "sqlite3",
     connection: {
-      filename: "./db/data/kubor.sqlite"
+      filename: __dirname + "/db/data/kubor.sqlite"
     },
     pool: {
       afterCreate: (conn, cb) => {
@@ -34,7 +32,7 @@ module.exports = {
   production: {
     client: "sqlite3",
     connection: {
-      filename: "./db/data/kubor.sqlite"
+      filename: __dirname + "/db/data/kubor.sqlite"
     },
     pool: {
       afterCreate: (conn, cb) => {

@@ -50,7 +50,7 @@ class Reports extends React.Component {
 
   componentDidMount() {
     // TODO: JS Date object vs unix time stamp
-    // Not it's just a big mess
+    // Now it's just a big mess
     let { startDate } = this.props.timeInterval;
 
     this.props.getClusterCosts(
