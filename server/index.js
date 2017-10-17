@@ -14,7 +14,7 @@ const knex = require("knex")(knexConfig);
 
 const CronJob = require("cron").CronJob;
 
-const metrics = require("../server/utils/metrics");
+const metrics = require("./utils/metrics");
 
 const { fetchNamespaceUsage, fetchTotalUsage } = metrics;
 
