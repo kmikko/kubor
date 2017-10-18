@@ -10,11 +10,6 @@ Application consists of following components:
 ## Requirements
  - [Prometheus](https://github.com/kubernetes/contrib/tree/master/prometheus)
 
-## Build image
-Build Docker image including server and static assets
-```sh
-./build.sh
-```
 
 ## Local development
 Run frontend in development mode
@@ -33,4 +28,16 @@ kubectl -n monitoring port-forward prometheus-k8s-0 9090
 Backend will automatically initialize database and run migrations. You can seed cluster cost data by issuing following command in `server` directory
 ```sh
 ./node_modules/knex/bin/cli.js seed:run
+```
+
+## Build image
+Build Docker image including server and static assets
+```sh
+./build.sh
+```
+
+## Deploy to Kubernetes
+Edit `PROMETHEUS_URL` in `kubernetes/kubor.yaml` accordingly and then
+```sh
+kubectl apply -f kubernetes/kubor.yaml
 ```
