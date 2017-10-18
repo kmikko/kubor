@@ -5,8 +5,6 @@ import { createLogger } from "redux-logger";
 import createHistory from "history/createBrowserHistory";
 import rootReducer from "./reducers";
 
-//import app from "./reducers";
-
 export const history = createHistory();
 
 const initialState = {};

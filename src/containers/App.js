@@ -1,23 +1,14 @@
 import React from "react";
 import { Route, Switch } from "react-router-dom";
-import { connect } from "react-redux";
 
 // Using Bulma with extensions so custom build css
 import "../styles/bulma.css";
 import "font-awesome/css/font-awesome.css";
 import "./App.css";
 
-import TopBar from "./TopBar";
 import NavBar from "./NavBar";
-import SideBar from "./SideBar";
-import MainContent from "./MainContent";
-import Errors from "../components/Errors";
-
-import Dashboard from "./Dashboard";
-import About from "./About";
-import Topics from "./Topics";
+import Errors from "./Errors";
 import NoMatch from "./NoMatch";
-import Home from "./Home";
 
 import Overview from "./Overview";
 import Reports from "./Reports";
@@ -32,10 +23,6 @@ const App = props => (
       <Route exact path="/" component={Overview} />
       <Route exact path="/reports" component={Reports} />
       <Route exact path="/forecasts" component={Forecasts} />
-      <Route exact path="/dashboard" component={Dashboard} />
-      <Route exact path="/about" component={About} />
-      <Route path="/topics" component={Topics} />
-      <Route path="/home" component={Home} />
       <Route component={NoMatch} />
     </Switch>
   </div>

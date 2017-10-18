@@ -1,7 +1,7 @@
 import React from "react";
 import { connect } from "react-redux";
 
-import Notification from "./Notification";
+import Notification from "../components/Notification";
 
 import Transition from "react-transition-group/Transition";
 import TransitionGroup from "react-transition-group/TransitionGroup";

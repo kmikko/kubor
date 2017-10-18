@@ -29,8 +29,6 @@ import {
   changeResourceFilter
 } from "../actions";
 
-import CheckboxGroup from "../components/CheckboxGroup";
-
 class Reports extends React.Component {
   constructor(props) {
     super(props);
