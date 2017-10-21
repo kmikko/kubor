@@ -1,6 +1,7 @@
 const fetch = require("node-fetch");
 
-const API_ROOT = "http://localhost:3000/api/v1";
+const NODE_PORT = process.env.NODE_PORT || 3000;
+const API_ROOT = `http://localhost:${NODE_PORT}/api/v1`;
 
 const handleErrors = response => {
   if (!response.ok) {
