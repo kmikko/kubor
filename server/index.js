@@ -141,6 +141,12 @@ app.delete("/api/v1/cluster/costs/:id", function(req, res) {
     .catch(err => res.sendStatus(422));
 });
 
+// FIXME: Debug route for getting metrics
+app.get("/api/v1/get_metrics", function(req, res) {
+  getMetrics();
+  res.sendStatus(200);
+});
+
 // Serve frontend
 app.get("/*", function(req, res) {
   res.sendFile(path.join(__dirname, "index.html"));
@@ -148,46 +154,50 @@ app.get("/*", function(req, res) {
 
 app.listen(NODE_PORT);
 
+function getMetrics() {
+  console.log("Getting metrics data...");
+  const start = new Date();
+  const startDate =
+    new Date(
+      Date.UTC(
+        start.getUTCFullYear(),
+        start.getUTCMonth(),
+        start.getUTCDate(),
+        start.getUTCHours() - 1,
+        0,
+        0
+      )
+    ) / 1000;
+  const endDate =
+    new Date(
+      Date.UTC(
+        start.getUTCFullYear(),
+        start.getUTCMonth(),
+        start.getUTCDate(),
+        start.getUTCHours() - 1,
+        59,
+        59,
+        999
+      )
+    ) / 1000;
+
+  // 3600s = 1h
+  const STEP = 3600;
+
+  Promise.all([
+    fetchNamespaceUsage(startDate, endDate, STEP),
+    fetchTotalUsage(startDate, endDate, STEP)
+  ])
+    .then(data => data.reduce((acc, curr) => acc.concat(curr), []))
+    .then(data => knex.batchInsert("metrics", data, 100))
+    .catch(err => console.error(err));
+}
 // TODO: Decouple this
 new CronJob(
   "0 5 */1 * * *",
   function() {
     console.log("Running", new Date().toUTCString());
-    const start = new Date();
-    const startDate =
-      new Date(
-        Date.UTC(
-          start.getUTCFullYear(),
-          start.getUTCMonth(),
-          start.getUTCDate(),
-          start.getUTCHours() - 1,
-          0,
-          0
-        )
-      ) / 1000;
-    const endDate =
-      new Date(
-        Date.UTC(
-          start.getUTCFullYear(),
-          start.getUTCMonth(),
-          start.getUTCDate(),
-          start.getUTCHours() - 1,
-          59,
-          59,
-          999
-        )
-      ) / 1000;
-
-    // 3600s = 1h
-    const STEP = 3600;
-
-    Promise.all([
-      fetchNamespaceUsage(startDate, endDate, STEP),
-      fetchTotalUsage(startDate, endDate, STEP)
-    ])
-      .then(data => data.reduce((acc, curr) => acc.concat(curr), []))
-      .then(data => knex.batchInsert("metrics", data, 100))
-      .catch(err => console.error(err));
+    getMetrics();
   },
   null,
   true,
