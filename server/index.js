@@ -20,7 +20,7 @@ const { fetchNamespaceUsage, fetchTotalUsage } = metrics;
 
 const PROMETHEUS_URL =
   process.env.PROMETHEUS_URL ||
-  "http://prometheus-prometheus-server.default.svc.cluster.local";
+  "http://prometheus-k8s.monitoring.svc.cluster.local:9090";
 
 const NODE_PORT = process.env.NODE_PORT || 3000;
 

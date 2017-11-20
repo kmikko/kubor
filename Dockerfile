@@ -5,7 +5,7 @@ ENV NODE_PORT=4000
 RUN mkdir -p /app
 
 WORKDIR /app
-COPY build/ /app/
+COPY client/build/ /app/
 COPY server/ /app/
 
 RUN yarn install
